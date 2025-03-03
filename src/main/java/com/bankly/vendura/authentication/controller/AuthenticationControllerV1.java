@@ -1,12 +1,11 @@
 package com.bankly.vendura.authentication.controller;
 
-import com.bankly.vendura.authentication.JWTService;
+import com.bankly.vendura.authentication.security.JWTService;
 import com.bankly.vendura.authentication.controller.models.Login;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

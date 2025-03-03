@@ -1,4 +1,4 @@
-package com.bankly.vendura.authentication.roles;
+package com.bankly.vendura.authentication.roles.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

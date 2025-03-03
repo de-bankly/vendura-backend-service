@@ -1,4 +1,4 @@
-package com.bankly.vendura.authentication.user;
+package com.bankly.vendura.authentication.user.model;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 

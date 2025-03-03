@@ -1,7 +1,6 @@
-package com.bankly.vendura.authentication.user;
+package com.bankly.vendura.authentication.user.model;
 
-import com.bankly.vendura.authentication.roles.IRole;
-import com.bankly.vendura.authentication.roles.Role;
+import com.bankly.vendura.authentication.roles.model.Role;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -26,9 +25,5 @@ public class User implements IUser {
   private String password;
 
   @DBRef private Set<Role> roles = new HashSet<>();
-
-  public Set<? extends IRole> getRoles() {
-    return roles;
-  }
 
 }

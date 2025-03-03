@@ -1,21 +1,16 @@
-package com.bankly.vendura.authentication;
+package com.bankly.vendura.authentication.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
 
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
@@ -49,7 +44,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
-    LOGGER.debug("AuthTokenFilter was invoked for URI: {}", request.getRequestURI());
+    LOGGER.info("AuthTokenFilter was invoked for URI: {}", request.getRequestURI());
 
     try {
       String token = parseToken(request); // Reading token from HTTP request
@@ -72,6 +67,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         LOGGER.debug("Roles from JWT: {}", authentication.getAuthorities());
 
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        authentication.setAuthenticated(true);
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
       }

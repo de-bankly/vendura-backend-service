@@ -1,4 +1,4 @@
-package com.bankly.vendura.authentication;
+package com.bankly.vendura.authentication.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;

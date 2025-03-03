@@ -1,5 +1,6 @@
-package com.bankly.vendura.authentication;
+package com.bankly.vendura.authentication.security;
 
+import com.bankly.vendura.authentication.user.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.SecurityContextPersistenceFilter;
 
 /**
  * This class handles the Spring Web Security filter chain and provides basic Beans for the
@@ -41,6 +43,7 @@ public class SecurityConfig {
    */
   @Bean
   public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+    http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
     http.authorizeHttpRequests(
         authorizeRequests ->
             authorizeRequests
@@ -53,6 +56,7 @@ public class SecurityConfig {
     http.exceptionHandling(exception -> exception.authenticationEntryPoint(this.authEntryPointJWT)); // Bean AuthEntryPointJWT will handle all exceptions
     //http.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin())); // probably not required
     http.csrf(csrf -> csrf.disable()); // disables requirement of CSRF for POST requests
+    http.cors(cors -> cors.disable());
 
     return http.build();
   }

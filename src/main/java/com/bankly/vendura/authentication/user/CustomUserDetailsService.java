@@ -1,10 +1,12 @@
-package com.bankly.vendura.authentication;
+package com.bankly.vendura.authentication.user;
 
-import com.bankly.vendura.authentication.roles.IRole;
-import com.bankly.vendura.authentication.user.IUser;
-import com.bankly.vendura.authentication.user.UserRepository;
+import com.bankly.vendura.authentication.roles.model.IRole;
+
 import java.util.*;
 import java.util.stream.Collectors;
+
+import com.bankly.vendura.authentication.user.model.IUser;
+import com.bankly.vendura.authentication.user.model.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;

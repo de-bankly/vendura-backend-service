@@ -1,4 +1,4 @@
-package com.bankly.vendura.authentication;
+package com.bankly.vendura.authentication.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
