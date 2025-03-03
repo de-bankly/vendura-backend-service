@@ -1,5 +1,6 @@
 package com.bankly.vendura;
 
+import io.sentry.Sentry;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
