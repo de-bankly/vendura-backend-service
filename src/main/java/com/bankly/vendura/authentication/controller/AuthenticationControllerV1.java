@@ -52,15 +52,9 @@ public class AuthenticationControllerV1 {
   public ResponseEntity<?> authenticate(@RequestBody Login.Request request) {
     Authentication authentication = null;
 
-    try {
-      authentication = this.authenticationManager.authenticate(new
-              UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
-    } catch (AuthenticationException exception) {
-      final Map<String, Object> response = new HashMap<>();
-      response.put("message", "Bad credentials");
-      response.put("status", 401);
-      return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
-    }
+    authentication =
+        this.authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
 
     SecurityContextHolder.getContext().setAuthentication(authentication);
     UserDetails userDetails = (UserDetails) authentication.getPrincipal();
@@ -73,5 +67,4 @@ public class AuthenticationControllerV1 {
 
     return ResponseEntity.ok(response);
   }
-
 }

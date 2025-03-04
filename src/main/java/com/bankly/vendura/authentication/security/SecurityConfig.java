@@ -18,7 +18,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.context.SecurityContextPersistenceFilter;
 
 /**
  * This class handles the Spring Web Security filter chain and provides basic Beans for the
@@ -31,7 +30,6 @@ import org.springframework.security.web.context.SecurityContextPersistenceFilter
 public class SecurityConfig {
 
   private final UserDetailsService userDetailsService;
-  private final AuthEntryPointJWT authEntryPointJWT;
   private final AuthTokenFilter authTokenFilter;
 
   /**
@@ -43,18 +41,25 @@ public class SecurityConfig {
    */
   @Bean
   public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-    http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
+    // http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
+    http.addFilterAfter(this.authTokenFilter, UsernamePasswordAuthenticationFilter.class);
     http.authorizeHttpRequests(
         authorizeRequests ->
             authorizeRequests
                 .requestMatchers("/v1/authentication/**")
-                .permitAll() // permitting all requests to /v1/authentication/** without authentication
+                .permitAll() // permitting all requests to /v1/authentication/** without
+                // authentication
+                // .requestMatchers("/error")
+                // .permitAll()
                 .anyRequest()
                 .authenticated()); // any other request must be authenticated
     http.sessionManagement(
-        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // JWT only works with stateless authentication (no sessions)
-    http.exceptionHandling(exception -> exception.authenticationEntryPoint(this.authEntryPointJWT)); // Bean AuthEntryPointJWT will handle all exceptions
-    //http.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin())); // probably not required
+        session ->
+            session.sessionCreationPolicy(
+                SessionCreationPolicy
+                    .STATELESS)); // JWT only works with stateless authentication (no sessions)
+    // http.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin())); //
+    // probably not required
     http.csrf(csrf -> csrf.disable()); // disables requirement of CSRF for POST requests
     http.cors(cors -> cors.disable());
 

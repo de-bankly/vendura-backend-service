@@ -1,5 +1,6 @@
 package com.bankly.vendura.authentication.security;
 
+import com.bankly.vendura.utilities.exceptions.CustomAuthenticationException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -13,6 +14,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -108,15 +113,29 @@ public class JWTService {
       Jwts.parser().verifyWith((SecretKey) key()).build().parseSignedClaims(token);
       return true;
     } catch (MalformedJwtException exception) {
-      LOGGER.error("Invalid JWT token: {}", exception.getMessage());
+      LOGGER.error("Invalid JWT token (malformed): {}", exception.getMessage());
+      throw new InsufficientAuthenticationException("Invalid token", exception);
     } catch (ExpiredJwtException exception) {
       LOGGER.error("JWT token is expired: {}", exception.getMessage());
+      throw new InsufficientAuthenticationException("Token expired", exception);
     } catch (UnsupportedJwtException exception) {
       LOGGER.error("JWT token is unsupported {}", exception.getMessage());
+      throw new BadCredentialsException("Invalid token", exception);
     } catch (IllegalArgumentException exception) {
       LOGGER.error("JWT claims string is empty: {}", exception.getMessage());
+      throw new BadCredentialsException("Invalid token", exception);
+    } catch (Exception exception) {
+      LOGGER.error(
+          "Unexpected exception: {}, Message: {}",
+          exception.getClass().getSimpleName(),
+          exception.getMessage());
+      throw new CustomAuthenticationException(
+          "Unexpected exception: "
+              + exception.getClass().getSimpleName()
+              + ", Message: "
+              + exception.getMessage(),
+          exception, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return false;
   }
 
   public List<SimpleGrantedAuthority> getAuthoritiesFromToken(String token) {

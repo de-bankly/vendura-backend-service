@@ -3,8 +3,7 @@ package com.bankly.vendura.authentication.roles.controller;
 import com.bankly.vendura.authentication.roles.RoleService;
 import com.bankly.vendura.authentication.roles.model.IRole;
 import com.bankly.vendura.authentication.roles.model.RoleDTO;
-import com.bankly.vendura.exceptions.EntityCreationException;
-import com.bankly.vendura.exceptions.EntityCreationExceptionResponse;
+import com.bankly.vendura.utilities.exceptions.EntityCreationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,14 +24,8 @@ public class RoleControllerV1 {
   @RequestMapping(value = "/create", method = RequestMethod.POST)
   public ResponseEntity<?> createRole(@RequestBody RoleDTO roleDTO) {
     IRole role = null;
-    try {
-      role = this.roleService.createRole(roleDTO.getName());
-    } catch (EntityCreationException e) {
-      return ResponseEntity.badRequest()
-          .body(
-              new EntityCreationExceptionResponse(
-                  "/v1/role/create", "Bad Request", e.getMessage(), 400));
-    }
+
+    role = this.roleService.createRole(roleDTO.getName());
 
     return ResponseEntity.ok(RoleDTO.fromRole(role));
   }

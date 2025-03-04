@@ -5,17 +5,18 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 /**
  * Filter that checks the JWT token in each request. Validates the token and sets the user
@@ -29,6 +30,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
   private final JWTService jwtService;
   private final UserDetailsService userDetailsService;
+  private final HandlerExceptionResolver handlerExceptionResolver;
 
   /**
    * This method processes the incoming request, checks the JWT token, validates it, and sets the
@@ -44,36 +46,58 @@ public class AuthTokenFilter extends OncePerRequestFilter {
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
-    LOGGER.info("AuthTokenFilter was invoked for URI: {}", request.getRequestURI());
+
+    // This filter will ignore all requests on /v1/authentication and /error, because authentication
+    // is not required there
+    if (request.getRequestURI().startsWith("/v1/authentication")
+        || request.getRequestURI().equalsIgnoreCase("/error")) {
+      filterChain.doFilter(request, response); // further processing of the filter chain
+      return;
+    }
+
+    LOGGER.debug("AuthTokenFilter was invoked for URI: {}", request.getRequestURI());
+
+    String token = parseToken(request); // Reading token from HTTP request
+    LOGGER.debug("Authentication with token: {}", token);
+
+    // If token is null or empty, GlobalExceptionHandler will deal with the AuthenticationException
+    if (token == null || token.isEmpty()) {
+      LOGGER.debug("Invalid/empty token");
+      this.handlerExceptionResolver.resolveException(
+          request, response, null, new InsufficientAuthenticationException("Invalid token"));
+      return;
+    }
 
     try {
-      String token = parseToken(request); // Reading token from HTTP request
-      LOGGER.debug("Authentication with token: {}", token);
+      this.jwtService.validateToken(
+          token); // Token gets validated here, unchecked exception expected on failure
 
-      if (token != null && this.jwtService.validateToken(token)) { // Token is not null and valid
+      PreAuthenticatedAuthenticationToken authentication =
+          new PreAuthenticatedAuthenticationToken(
+              this.jwtService.getUsernameFromToken(token),
+              token,
+              this.jwtService.getAuthoritiesFromToken(
+                  token)); // Authentication for Spring with external token, username and
+      // authorities are parsed from the token by JWTService
 
-        PreAuthenticatedAuthenticationToken authentication =
-            new PreAuthenticatedAuthenticationToken(
-                this.jwtService.getUsernameFromToken(token),
-                token,
-                this.jwtService.getAuthoritiesFromToken(
-                    token)); // Authentication for Spring with external token, username and
-                             // authorities are parsed from the token by JWTService
+      LOGGER.debug(
+          "Token validated tor user {} with authorities {}",
+          authentication.getPrincipal(),
+          authentication.getAuthorities());
 
-        LOGGER.debug(
-            "Token validated tor user {} with authorities {}",
-            authentication.getPrincipal(),
-            authentication.getAuthorities());
-        LOGGER.debug("Roles from JWT: {}", authentication.getAuthorities());
+      authentication.setDetails(
+          new WebAuthenticationDetailsSource()
+              .buildDetails(request)); // logging requests details on authentication
+      authentication.setAuthenticated(true);
 
-        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-        authentication.setAuthenticated(true);
+      SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-      }
     } catch (Exception exception) {
-      LOGGER.error("Cannot set user authentication: {}", exception.getMessage());
-      LOGGER.error("Exception", exception);
+      LOGGER.error(
+          "Authentication failed: {}, processing to ExceptionResolver",
+          exception.getClass().getSimpleName());
+      this.handlerExceptionResolver.resolveException(
+          request, response, null, exception); // Exceptions will be processed further
     }
 
     filterChain.doFilter(request, response);
@@ -90,5 +114,4 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     LOGGER.debug("AuthTokenFilter.java: {}", token);
     return token;
   }
-
 }
