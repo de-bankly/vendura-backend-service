@@ -16,8 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.InsufficientAuthenticationException;
-import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -106,18 +104,17 @@ public class JWTService {
    * Validates the provided JWT token.
    *
    * @param token the JWT token to validate
-   * @return true if the token is valid, false otherwise
+   * @throws BadCredentialsException in case of failure
    */
-  public boolean validateToken(String token) {
+  public void validateToken(String token) {
     try {
       Jwts.parser().verifyWith((SecretKey) key()).build().parseSignedClaims(token);
-      return true;
     } catch (MalformedJwtException exception) {
       LOGGER.error("Invalid JWT token (malformed): {}", exception.getMessage());
-      throw new InsufficientAuthenticationException("Invalid token", exception);
+      throw new BadCredentialsException("Invalid token", exception);
     } catch (ExpiredJwtException exception) {
       LOGGER.error("JWT token is expired: {}", exception.getMessage());
-      throw new InsufficientAuthenticationException("Token expired", exception);
+      throw new BadCredentialsException("Token expired", exception);
     } catch (UnsupportedJwtException exception) {
       LOGGER.error("JWT token is unsupported {}", exception.getMessage());
       throw new BadCredentialsException("Invalid token", exception);
