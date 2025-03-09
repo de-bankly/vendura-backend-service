@@ -1,15 +1,13 @@
 package com.bankly.vendura.authentication.user;
 
-import java.util.Optional;
-import java.util.Set;
-
-import com.bankly.vendura.authentication.roles.model.IRole;
-import com.bankly.vendura.authentication.roles.model.Role;
 import com.bankly.vendura.authentication.roles.RoleService;
+import com.bankly.vendura.authentication.roles.model.Role;
 import com.bankly.vendura.authentication.user.model.IUser;
 import com.bankly.vendura.authentication.user.model.User;
 import com.bankly.vendura.authentication.user.model.UserRepository;
 import com.bankly.vendura.utilities.exceptions.EntityCreationException;
+import java.util.Optional;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,10 +24,12 @@ public class UserService {
   private final PasswordEncoder passwordEncoder;
 
   @Transactional
-  public IUser createUser(String username, String passwordPlain, Set<String> roles) throws EntityCreationException {
+  public IUser createUser(String username, String passwordPlain, Set<String> roles)
+      throws EntityCreationException {
 
     if (this.userRepository.findUserByUsername(username).isPresent()) {
-      throw new EntityCreationException("Username " + username + " already exists", HttpStatus.CONFLICT, "User", true);
+      throw new EntityCreationException(
+          "Username " + username + " already exists", HttpStatus.CONFLICT, "User", true);
     }
 
     User user = new User();
@@ -37,8 +37,24 @@ public class UserService {
     user.setPassword(this.passwordEncoder.encode(passwordPlain));
 
     for (String role : roles) {
-      Optional<IRole> optionalRole = this.roleService.findRoleByName(role);
-        user.getRoles().add((Role) optionalRole.orElseThrow(() -> new EntityCreationException("Role " + role + " not found", HttpStatus.UNPROCESSABLE_ENTITY, "User", true)));
+      Optional<Role> optionalRole = this.roleService.findRoleByName(role);
+
+      if (optionalRole.isEmpty()) {
+        throw new EntityCreationException(
+            "Role " + role + " not found", HttpStatus.UNPROCESSABLE_ENTITY, "User", true);
+      }
+
+      Role roleObj = optionalRole.get();
+
+      if (!roleObj.isActive()) {
+        throw new EntityCreationException(
+            "Role " + role + " cannot be assigned due to being inactive",
+            HttpStatus.CONFLICT,
+            "User",
+            true);
+      }
+
+      user.getRoles().add(roleObj);
     }
 
     return this.userRepository.save(user);
@@ -48,5 +64,4 @@ public class UserService {
     Optional<User> optionalUser = this.userRepository.findUserByUsername(username);
     return optionalUser.orElse(null);
   }
-
 }

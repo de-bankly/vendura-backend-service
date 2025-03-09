@@ -1,6 +1,7 @@
 package com.bankly.vendura.authentication.user.model;
 
-import com.bankly.vendura.authentication.roles.model.IRole;
+import com.bankly.vendura.authentication.roles.model.Role;
+
 import java.util.Set;
 
 public interface IUser {
@@ -11,5 +12,5 @@ public interface IUser {
 
   String getPassword();
 
-  <T extends IRole> Set<T> getRoles();
+  <T extends Role> Set<T> getRoles();
 }

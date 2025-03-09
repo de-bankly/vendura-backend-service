@@ -1,10 +1,9 @@
 package com.bankly.vendura.authentication.user;
 
-import com.bankly.vendura.authentication.roles.model.IRole;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.bankly.vendura.authentication.roles.model.Role;
 import com.bankly.vendura.authentication.user.model.IUser;
 import com.bankly.vendura.authentication.user.model.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -66,7 +65,7 @@ public class CustomUserDetailsService implements UserDetailsService {
    * @param roles the set of roles to map
    * @return a collection of granted authorities for the given roles
    */
-  private Collection<GrantedAuthority> mapRolesToAuthorities(Set<? extends IRole> roles) {
+  private Collection<GrantedAuthority> mapRolesToAuthorities(Set<Role> roles) {
     return roles.stream()
         .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName().toUpperCase()))
         .collect(Collectors.toList());
