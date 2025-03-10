@@ -59,17 +59,32 @@ public class RoleControllerV1 {
     }
 
 
-    if (roleDTO.getName() != null) {
+    if (roleDTO.getName() != null && !roleDTO.getName().equals(role.getName())) {
       role.setName(roleDTO.getName());
     }
 
-    if (roleDTO.getActive() != null) {
+    if (roleDTO.getActive() != null && roleDTO.getActive() != role.isActive()) {
       role.setActive(roleDTO.getActive());
     }
 
     this.roleRepository.save(role);
 
     return ResponseEntity.ok(RoleDTO.fromRole(role));
+  }
+
+  @DeleteMapping("/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<?> deactivateRole(@PathVariable("id") String id) {
+    Role role = this.roleRepository.findById(id).orElse(null);
+
+    if (role == null) {
+      throw new EntityUpdateException("Role with ID " + id + " not found", HttpStatus.NOT_FOUND, null);
+    }
+
+    role.setActive(false);
+    this.roleRepository.save(role);
+
+    return ResponseEntity.ok().body(role);
   }
 
   @GetMapping
