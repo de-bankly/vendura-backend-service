@@ -2,7 +2,6 @@ package com.bankly.vendura.authentication.user;
 
 import com.bankly.vendura.authentication.roles.RoleService;
 import com.bankly.vendura.authentication.roles.model.Role;
-import com.bankly.vendura.authentication.user.model.IUser;
 import com.bankly.vendura.authentication.user.model.User;
 import com.bankly.vendura.authentication.user.model.UserRepository;
 import com.bankly.vendura.utilities.exceptions.EntityCreationException;
@@ -24,7 +23,7 @@ public class UserService {
   private final PasswordEncoder passwordEncoder;
 
   @Transactional
-  public IUser createUser(String username, String passwordPlain, Set<String> roles)
+  public User createUser(String username, String passwordPlain, Set<String> roles)
       throws EntityCreationException {
 
     if (this.userRepository.findUserByUsername(username).isPresent()) {
@@ -60,7 +59,7 @@ public class UserService {
     return this.userRepository.save(user);
   }
 
-  public IUser getUser(String username) {
+  public User getUser(String username) {
     Optional<User> optionalUser = this.userRepository.findUserByUsername(username);
     return optionalUser.orElse(null);
   }

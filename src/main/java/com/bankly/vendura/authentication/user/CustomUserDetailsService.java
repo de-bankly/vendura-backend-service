@@ -4,7 +4,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.bankly.vendura.authentication.roles.model.Role;
-import com.bankly.vendura.authentication.user.model.IUser;
 import com.bankly.vendura.authentication.user.model.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +50,7 @@ public class CustomUserDetailsService implements UserDetailsService {
           Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")));
     }
 
-    IUser user =
+    com.bankly.vendura.authentication.user.model.User user =
         this.userRepository
             .findUserByUsername(username)
             .orElseThrow(() -> new UsernameNotFoundException(username + " not found"));

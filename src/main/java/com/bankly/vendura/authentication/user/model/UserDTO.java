@@ -21,7 +21,7 @@ public class UserDTO {
     return new User(this.id, this.username, this.password, this.roles.stream().map(RoleDTO::toRole).collect(Collectors.toSet()));
   }
 
-  public static UserDTO fromUser(IUser user) {
+  public static UserDTO fromUser(User user) {
     return new UserDTO(user.getId(), user.getUsername(), user.getPassword(), user.getRoles().stream().map(RoleDTO::fromRole).collect(Collectors.toSet()));
   }
 

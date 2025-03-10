@@ -2,7 +2,7 @@ package com.bankly.vendura.authentication.user.controller;
 
 import com.bankly.vendura.authentication.roles.model.RoleDTO;
 import com.bankly.vendura.authentication.user.UserService;
-import com.bankly.vendura.authentication.user.model.IUser;
+import com.bankly.vendura.authentication.user.model.User;
 import com.bankly.vendura.authentication.user.model.UserDTO;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -26,8 +26,7 @@ public class UserControllerV1 {
   @PreAuthorize("hasRole('ADMIN')")
   @RequestMapping(value = "/create", method = RequestMethod.POST)
   public ResponseEntity<?> createUser(@RequestBody UserDTO userDTO) {
-    IUser user = null;
-    user =
+    User user =
         this.userService.createUser(
             userDTO.getUsername(),
             userDTO.getPassword(),
@@ -41,7 +40,7 @@ public class UserControllerV1 {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     String username = authentication.getName();
 
-    IUser user = this.userService.getUser(username);
+    User user = this.userService.getUser(username);
     return ResponseEntity.ok().body(UserDTO.fromUser(user));
   }
 }
