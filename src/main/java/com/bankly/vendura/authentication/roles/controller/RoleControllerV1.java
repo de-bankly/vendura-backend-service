@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -69,6 +70,27 @@ public class RoleControllerV1 {
     this.roleRepository.save(role);
 
     return ResponseEntity.ok(RoleDTO.fromRole(role));
+  }
+
+  @GetMapping
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<?> getAllRoles() {
+    List<Role> allRoles = this.roleRepository.findAll();
+    List<RoleDTO> allRoleDtos = allRoles.stream().map(RoleDTO::fromRole).toList();
+    return ResponseEntity.ok().body(allRoleDtos);
+  }
+
+  @GetMapping("/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<?> getRole(@PathVariable("id") String id) {
+    Optional<Role> roleOptional = this.roleRepository.findById(id);
+
+    if (roleOptional.isPresent()) {
+      RoleDTO roleDto = RoleDTO.fromRole(roleOptional.get());
+      return ResponseEntity.ok(roleDto);
+    }
+
+    return ResponseEntity.notFound().build();
   }
 
 }
