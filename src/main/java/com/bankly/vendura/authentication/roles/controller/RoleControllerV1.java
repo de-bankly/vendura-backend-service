@@ -46,7 +46,7 @@ public class RoleControllerV1 {
       throw new EntityUpdateException("Role with ID " + id + " not found", HttpStatus.NOT_FOUND, null);
     }
 
-    if (!roleDTO.getId().equals(role.getId())) {
+    if (roleDTO.getId() != null) {
       throw new EntityUpdateException("Cannot update roles ID", HttpStatus.UNPROCESSABLE_ENTITY, "id");
     }
 
