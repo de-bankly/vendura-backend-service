@@ -25,4 +25,8 @@ public class User {
   private String password;
 
   @DBRef private Set<Role> roles = new HashSet<>();
+
+  private boolean enabled;
+  private boolean locked;
+
 }

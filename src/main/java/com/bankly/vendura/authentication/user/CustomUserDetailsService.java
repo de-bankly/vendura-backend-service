@@ -1,10 +1,9 @@
 package com.bankly.vendura.authentication.user;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.bankly.vendura.authentication.roles.model.Role;
 import com.bankly.vendura.authentication.user.model.UserRepository;
+import java.util.*;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -55,7 +54,15 @@ public class CustomUserDetailsService implements UserDetailsService {
             .findUserByUsername(username)
             .orElseThrow(() -> new UsernameNotFoundException(username + " not found"));
 
-    return new User(user.getUsername(), user.getPassword(), mapRolesToAuthorities(user.getRoles().stream().filter(Role::isActive).collect(Collectors.toSet())));
+    return new User(
+        user.getUsername(),
+        user.getPassword(),
+        user.isEnabled(),
+        true,
+        true,
+        !user.isLocked(),
+        mapRolesToAuthorities(
+            user.getRoles().stream().filter(Role::isActive).collect(Collectors.toSet())));
   }
 
   /**

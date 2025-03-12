@@ -45,6 +45,9 @@ public class UserService {
     user.setUsername(username);
     user.setPassword(this.passwordEncoder.encode(passwordPlain));
 
+    user.setEnabled(userDTO.getEnabled() == null || userDTO.getEnabled());
+    user.setLocked(userDTO.getLocked() == null || userDTO.getLocked());
+
     Set<String> roleIds = userDTO.getRoles().stream().map(RoleDTO::getId).collect(Collectors.toSet());
 
     for (String roleId : roleIds) {

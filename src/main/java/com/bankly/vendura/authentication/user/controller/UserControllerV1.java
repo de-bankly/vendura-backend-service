@@ -65,8 +65,12 @@ public class UserControllerV1 {
       user.setUsername(userDTO.getUsername());
     }
 
-    if (userDTO.getActive() != null && userDTO.getActive() != user.getActive()) {
-      user.setActive(userDTO.getActive());
+    if (userDTO.getLocked() != null && user.isLocked() != userDTO.getLocked()) {
+      user.setLocked(userDTO.getLocked());
+    }
+
+    if (userDTO.getEnabled() != null && user.isEnabled() != userDTO.getEnabled()) {
+      user.setEnabled(userDTO.getEnabled());
     }
 
     this.userRepository.save(user);

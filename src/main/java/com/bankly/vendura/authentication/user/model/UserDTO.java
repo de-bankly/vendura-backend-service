@@ -1,9 +1,8 @@
 package com.bankly.vendura.authentication.user.model;
 
+import com.bankly.vendura.authentication.roles.model.RoleDTO;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import com.bankly.vendura.authentication.roles.model.RoleDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,13 +15,16 @@ public class UserDTO {
   private String username;
   private String password;
   private Set<RoleDTO> roles;
-
-  public User toUser() {
-    return new User(this.id, this.username, this.password, this.roles.stream().map(RoleDTO::toRole).collect(Collectors.toSet()));
-  }
+  private Boolean enabled;
+  private Boolean locked;
 
   public static UserDTO fromUser(User user) {
-    return new UserDTO(user.getId(), user.getUsername(), user.getPassword(), user.getRoles().stream().map(RoleDTO::fromRole).collect(Collectors.toSet()));
+    return new UserDTO(
+        user.getId(),
+        user.getUsername(),
+        user.getPassword(),
+        user.getRoles().stream().map(RoleDTO::fromRole).collect(Collectors.toSet()),
+        user.isEnabled(),
+        user.isLocked());
   }
-
 }
