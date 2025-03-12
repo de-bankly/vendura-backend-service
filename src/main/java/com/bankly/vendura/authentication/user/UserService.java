@@ -7,13 +7,11 @@ import com.bankly.vendura.authentication.user.model.User;
 import com.bankly.vendura.authentication.user.model.UserDTO;
 import com.bankly.vendura.authentication.user.model.UserRepository;
 import com.bankly.vendura.utilities.exceptions.EntityCreationException;
-
-import java.util.HashSet;
+import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
+import com.bankly.vendura.utilities.exceptions.EntityUpdateException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,8 +28,7 @@ public class UserService {
   private final PasswordEncoder passwordEncoder;
 
   @Transactional
-  public User createUser(UserDTO userDTO)
-      throws EntityCreationException {
+  public User createUser(UserDTO userDTO) throws EntityCreationException {
 
     String username = userDTO.getUsername();
     String passwordPlain = userDTO.getPassword();
@@ -48,7 +45,8 @@ public class UserService {
     user.setEnabled(userDTO.getEnabled() == null || userDTO.getEnabled());
     user.setLocked(userDTO.getLocked() == null || userDTO.getLocked());
 
-    Set<String> roleIds = userDTO.getRoles().stream().map(RoleDTO::getId).collect(Collectors.toSet());
+    Set<String> roleIds =
+        userDTO.getRoles().stream().map(RoleDTO::getId).collect(Collectors.toSet());
 
     for (String roleId : roleIds) {
       Optional<Role> optionalRole = this.roleService.findRoleById(roleId);
@@ -62,7 +60,11 @@ public class UserService {
 
       if (!roleObj.isActive()) {
         throw new EntityCreationException(
-            "Role " + roleObj.getName() + "(" + roleObj.getId() +  ") cannot be assigned due to being inactive",
+            "Role "
+                + roleObj.getName()
+                + "("
+                + roleObj.getId()
+                + ") cannot be assigned due to being inactive",
             HttpStatus.CONFLICT,
             "User",
             true);
@@ -77,5 +79,48 @@ public class UserService {
   public User getUser(String username) {
     Optional<User> optionalUser = this.userRepository.findUserByUsername(username);
     return optionalUser.orElse(null);
+  }
+
+  public User updateUser(String id, UserDTO userDTO) {
+    User user = this.userRepository.findById(id).orElse(null);
+
+    if (user == null) {
+      throw new EntityRetrieveException(
+          "User with ID " + id + " not found", HttpStatus.NOT_FOUND, id);
+    }
+
+    if (userDTO.getId() != null) {
+      throw new EntityUpdateException(
+          "Cannot update user ID", HttpStatus.UNPROCESSABLE_ENTITY, "id");
+    }
+
+    if (userDTO.getUsername() != null && !user.getUsername().equals(userDTO.getUsername())) {
+      User existing = this.getUser(userDTO.getUsername());
+
+      if (existing != null) {
+        throw new EntityUpdateException("Username already exists", HttpStatus.CONFLICT, "name");
+      }
+
+      user.setUsername(userDTO.getUsername());
+    }
+
+    if (userDTO.getLocked() != null && user.isLocked() != userDTO.getLocked()) {
+      user.setLocked(userDTO.getLocked());
+    }
+
+    if (userDTO.getEnabled() != null && user.isEnabled() != userDTO.getEnabled()) {
+      user.setEnabled(userDTO.getEnabled());
+    }
+
+    return this.userRepository.save(user);
+  }
+
+  public User getUserById(String id) {
+    return this.userRepository
+        .findById(id)
+        .orElseThrow(
+            () ->
+                new EntityRetrieveException(
+                    "User with id " + id + " not found", HttpStatus.NOT_FOUND, id));
   }
 }
