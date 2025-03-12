@@ -1,19 +1,15 @@
 package com.bankly.vendura.authentication.user.controller;
 
-import com.bankly.vendura.authentication.roles.model.Role;
-import com.bankly.vendura.authentication.roles.model.RoleDTO;
 import com.bankly.vendura.authentication.user.UserService;
 import com.bankly.vendura.authentication.user.model.User;
 import com.bankly.vendura.authentication.user.model.UserDTO;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import com.bankly.vendura.authentication.user.model.UserRepository;
+import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
 import com.bankly.vendura.utilities.exceptions.EntityUpdateException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,12 +28,13 @@ public class UserControllerV1 {
   @PreAuthorize("hasRole('ADMIN')")
   @PostMapping
   public ResponseEntity<?> createUser(@RequestBody UserDTO userDTO) {
-    User user =
-        this.userService.createUser(
-            userDTO.getUsername(),
-            userDTO.getPassword(),
-            userDTO.getRoles().stream().map(RoleDTO::getName).collect(Collectors.toSet()));
+    User user = this.userService.createUser(userDTO);
+    return ResponseEntity.ok().body(UserDTO.fromUser(user));
+  }
 
+  @GetMapping("/me")
+  public ResponseEntity<?> getUser(Authentication authentication) {
+    User user = this.userService.getUser(authentication.getName());
     return ResponseEntity.ok().body(UserDTO.fromUser(user));
   }
 
@@ -47,21 +44,22 @@ public class UserControllerV1 {
     User user = this.userRepository.findById(id).orElse(null);
 
     if (user == null) {
-      throw new EntityUpdateException("User with ID " + id + " not found", HttpStatus.NOT_FOUND, null);
+      throw new EntityUpdateException(
+          "User with ID " + id + " not found", HttpStatus.NOT_FOUND, null);
     }
 
     if (userDTO.getId() != null) {
-      throw new EntityUpdateException("Cannot update user ID", HttpStatus.UNPROCESSABLE_ENTITY, "id");
+      throw new EntityUpdateException(
+          "Cannot update user ID", HttpStatus.UNPROCESSABLE_ENTITY, "id");
     }
 
     if (userDTO.getUsername() != null && !user.getUsername().equals(userDTO.getUsername())) {
-      Optional<User> existing = this.userService.findUserByUsername(userDTO.getUsername());
+      User existing = this.userService.getUser(userDTO.getUsername());
 
-      if (existing.isPresent()) {
+      if (existing != null) {
         throw new EntityUpdateException("Username already exists", HttpStatus.CONFLICT, "name");
       }
     }
-
 
     if (userDTO.getUsername() != null && !userDTO.getUsername().equals(user.getUsername())) {
       user.setUsername(userDTO.getUsername());
@@ -87,9 +85,21 @@ public class UserControllerV1 {
 
   @GetMapping
   @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<?> getAllUsers() {
-    List<User> allUsers = this.userRepository.findAll();
-    List<UserDTO> allUserDtos = allUsers.stream().map(UserDTO::fromUser).toList();
-    return ResponseEntity.ok().body(allUserDtos);
+  public ResponseEntity<?> getAllUsers(Pageable pageable) {
+    Page<User> users = this.userRepository.findAll(pageable);
+    return ResponseEntity.ok().body(users.map(UserDTO::fromUser));
+  }
+
+  @GetMapping("/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<?> getUserById(@PathVariable("id") String id) {
+    return ResponseEntity.ok(
+        UserDTO.fromUser(
+            this.userRepository
+                .findById(id)
+                .orElseThrow(
+                    () ->
+                        new EntityRetrieveException(
+                            "User with id " + id + " not found", HttpStatus.NOT_FOUND, id))));
   }
 }

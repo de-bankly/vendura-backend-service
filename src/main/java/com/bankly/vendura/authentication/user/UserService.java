@@ -2,11 +2,18 @@ package com.bankly.vendura.authentication.user;
 
 import com.bankly.vendura.authentication.roles.RoleService;
 import com.bankly.vendura.authentication.roles.model.Role;
+import com.bankly.vendura.authentication.roles.model.RoleDTO;
 import com.bankly.vendura.authentication.user.model.User;
+import com.bankly.vendura.authentication.user.model.UserDTO;
 import com.bankly.vendura.authentication.user.model.UserRepository;
 import com.bankly.vendura.utilities.exceptions.EntityCreationException;
+
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,8 +30,11 @@ public class UserService {
   private final PasswordEncoder passwordEncoder;
 
   @Transactional
-  public User createUser(String username, String passwordPlain, Set<String> roles)
+  public User createUser(UserDTO userDTO)
       throws EntityCreationException {
+
+    String username = userDTO.getUsername();
+    String passwordPlain = userDTO.getPassword();
 
     if (this.userRepository.findUserByUsername(username).isPresent()) {
       throw new EntityCreationException(
@@ -35,19 +45,21 @@ public class UserService {
     user.setUsername(username);
     user.setPassword(this.passwordEncoder.encode(passwordPlain));
 
-    for (String role : roles) {
-      Optional<Role> optionalRole = this.roleService.findRoleByName(role);
+    Set<String> roleIds = userDTO.getRoles().stream().map(RoleDTO::getId).collect(Collectors.toSet());
+
+    for (String roleId : roleIds) {
+      Optional<Role> optionalRole = this.roleService.findRoleById(roleId);
 
       if (optionalRole.isEmpty()) {
-        throw new EntityCreationException(
-            "Role " + role + " not found", HttpStatus.UNPROCESSABLE_ENTITY, "User", true);
+        throw new EntityRetrieveException(
+            "Role with " + roleId + " not found", HttpStatus.NOT_FOUND, roleId);
       }
 
       Role roleObj = optionalRole.get();
 
       if (!roleObj.isActive()) {
         throw new EntityCreationException(
-            "Role " + role + " cannot be assigned due to being inactive",
+            "Role " + roleObj.getName() + "(" + roleObj.getId() +  ") cannot be assigned due to being inactive",
             HttpStatus.CONFLICT,
             "User",
             true);
