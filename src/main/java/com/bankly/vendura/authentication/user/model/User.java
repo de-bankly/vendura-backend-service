@@ -15,7 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "users")
 @NoArgsConstructor
 @AllArgsConstructor
-public class User implements IUser {
+public class User {
 
   @Id private String id;
 
@@ -25,5 +25,8 @@ public class User implements IUser {
   private String password;
 
   @DBRef private Set<Role> roles = new HashSet<>();
+
+  private boolean enabled;
+  private boolean locked;
 
 }

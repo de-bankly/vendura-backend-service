@@ -1,11 +1,9 @@
 package com.bankly.vendura.authentication.roles.model;
 
-import org.springframework.data.mongodb.repository.MongoRepository;
-
 import java.util.Optional;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface RoleRepository extends MongoRepository<Role, String> {
 
-    Optional<Role> findRoleByName(String name);
-
+  Optional<Role> findRoleByName(String name);
 }

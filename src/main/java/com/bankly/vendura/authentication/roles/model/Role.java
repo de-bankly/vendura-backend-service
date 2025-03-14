@@ -10,11 +10,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "roles")
 @NoArgsConstructor
 @AllArgsConstructor
-public class Role implements IRole {
+public class Role {
 
-    @Id
-    private String id;
+  @Id private String id;
 
-    private String name;
+  private String name;
 
+  private boolean active;
 }

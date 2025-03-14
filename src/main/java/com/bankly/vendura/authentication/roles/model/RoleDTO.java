@@ -11,13 +11,14 @@ public class RoleDTO {
 
     private String id;
     private String name;
+    private Boolean active;
 
     public Role toRole() {
-        return new Role(id, name);
+        return new Role(id, name, active);
     }
 
-    public static RoleDTO fromRole(IRole role) {
-        return new RoleDTO(role.getId(), role.getName());
+    public static RoleDTO fromRole(Role role) {
+        return new RoleDTO(role.getId(), role.getName(), role.isActive());
     }
 
 }
