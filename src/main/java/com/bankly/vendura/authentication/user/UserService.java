@@ -1,19 +1,28 @@
 package com.bankly.vendura.authentication.user;
 
+import com.bankly.vendura.authentication.controller.models.Login;
 import com.bankly.vendura.authentication.roles.model.Role;
 import com.bankly.vendura.authentication.roles.model.RoleDTO;
 import com.bankly.vendura.authentication.roles.model.RoleRepository;
+import com.bankly.vendura.authentication.security.JWTService;
 import com.bankly.vendura.authentication.user.model.User;
 import com.bankly.vendura.authentication.user.model.UserDTO;
 import com.bankly.vendura.authentication.user.model.UserRepository;
 import com.bankly.vendura.utilities.exceptions.EntityCreationException;
 import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
 import com.bankly.vendura.utilities.exceptions.EntityUpdateException;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +35,8 @@ public class UserService {
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
   private final RoleRepository roleRepository;
+  private final AuthenticationManager authenticationManager;
+  private final JWTService jwtService;
 
   public User createUser(UserDTO userDTO) throws EntityCreationException {
 
@@ -113,5 +124,19 @@ public class UserService {
     }
 
     return this.userRepository.save(user);
+  }
+
+  public Login.Response authenticate(Login.Request request) {
+    Authentication authentication = this.authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+    UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+    String jwtToken = this.jwtService.generateToken(userDetails);
+    List<String> roles =
+            userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+
+      return new Login.Response(jwtToken, userDetails.getUsername(), roles);
   }
 }
