@@ -50,7 +50,12 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     // This filter will ignore all requests on /v1/authentication and /error, because authentication
     // is not required there
     if (request.getRequestURI().startsWith("/v1/authentication")
-        || request.getRequestURI().equalsIgnoreCase("/error")) {
+        || request.getRequestURI().equalsIgnoreCase("/error")
+        || request.getRequestURI().startsWith("/public/")
+        || request.getRequestURI().startsWith("/swagger-ui/")
+        || request.getRequestURI().equalsIgnoreCase("/favicon.ico")
+
+    ) {
       filterChain.doFilter(request, response); // further processing of the filter chain
       return;
     }
