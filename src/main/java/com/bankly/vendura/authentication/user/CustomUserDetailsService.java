@@ -1,12 +1,9 @@
 package com.bankly.vendura.authentication.user;
 
-import com.bankly.vendura.authentication.roles.model.IRole;
-
+import com.bankly.vendura.authentication.roles.model.Role;
+import com.bankly.vendura.authentication.user.model.UserRepository;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import com.bankly.vendura.authentication.user.model.IUser;
-import com.bankly.vendura.authentication.user.model.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -52,12 +49,20 @@ public class CustomUserDetailsService implements UserDetailsService {
           Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")));
     }
 
-    IUser user =
+    com.bankly.vendura.authentication.user.model.User user =
         this.userRepository
             .findUserByUsername(username)
             .orElseThrow(() -> new UsernameNotFoundException(username + " not found"));
 
-    return new User(user.getUsername(), user.getPassword(), mapRolesToAuthorities(user.getRoles()));
+    return new User(
+        user.getUsername(),
+        user.getPassword(),
+        user.isEnabled(),
+        true,
+        true,
+        !user.isLocked(),
+        mapRolesToAuthorities(
+            user.getRoles().stream().filter(Role::isActive).collect(Collectors.toSet())));
   }
 
   /**
@@ -66,7 +71,7 @@ public class CustomUserDetailsService implements UserDetailsService {
    * @param roles the set of roles to map
    * @return a collection of granted authorities for the given roles
    */
-  private Collection<GrantedAuthority> mapRolesToAuthorities(Set<? extends IRole> roles) {
+  private Collection<GrantedAuthority> mapRolesToAuthorities(Set<Role> roles) {
     return roles.stream()
         .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName().toUpperCase()))
         .collect(Collectors.toList());

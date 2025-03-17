@@ -46,7 +46,7 @@ public class SecurityConfig {
     http.authorizeHttpRequests(
         authorizeRequests ->
             authorizeRequests
-                .requestMatchers("/v1/authentication/**")
+                .requestMatchers("/v1/authentication/**", "/public/**", "/favicon.ico", "/swagger-ui/**")
                 .permitAll() // permitting all requests to /v1/authentication/** without
                 // authentication
                 // .requestMatchers("/error")
