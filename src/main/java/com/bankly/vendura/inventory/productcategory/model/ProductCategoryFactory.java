@@ -1,4 +1,4 @@
-package com.bankly.vendura.inventory.product.model;
+package com.bankly.vendura.inventory.productcategory.model;
 
 public class ProductCategoryFactory {
 

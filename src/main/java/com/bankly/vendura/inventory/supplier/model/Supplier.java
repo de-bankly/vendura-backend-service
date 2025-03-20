@@ -1,4 +1,4 @@
-package com.bankly.vendura.inventory.product.model;
+package com.bankly.vendura.inventory.supplier.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,13 +7,18 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
-@Document(collection = "product_categories")
+@Document(collection = "supplier")
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductCategory {
+public class Supplier {
 
     @Id private String id;
 
-    private String name;
+    private String legalName;
+    private String street;
+    private String streetNo;
+    private String city;
+    private String zip;
+    private String country;
 
 }

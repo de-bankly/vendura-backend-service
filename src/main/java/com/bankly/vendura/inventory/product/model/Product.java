@@ -1,7 +1,8 @@
 package com.bankly.vendura.inventory.product.model;
 
 import com.bankly.vendura.inventory.brand.model.Brand;
-import com.bankly.vendura.inventory.supply.Supplier;
+import com.bankly.vendura.inventory.productcategory.model.ProductCategory;
+import com.bankly.vendura.inventory.supplier.model.Supplier;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

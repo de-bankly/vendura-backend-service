@@ -1,8 +1,8 @@
-package com.bankly.vendura.inventory.product;
+package com.bankly.vendura.inventory.productcategory;
 
-import com.bankly.vendura.inventory.product.model.ProductCategory;
-import com.bankly.vendura.inventory.product.model.ProductCategoryDTO;
-import com.bankly.vendura.inventory.product.model.ProductCategoryRepository;
+import com.bankly.vendura.inventory.productcategory.model.ProductCategory;
+import com.bankly.vendura.inventory.productcategory.model.ProductCategoryDTO;
+import com.bankly.vendura.inventory.productcategory.model.ProductCategoryRepository;
 import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
