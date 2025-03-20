@@ -1,6 +1,5 @@
-package com.bankly.vendura.authentication.user.controller;
+package com.bankly.vendura.authentication.user;
 
-import com.bankly.vendura.authentication.user.UserService;
 import com.bankly.vendura.authentication.user.model.UserDTO;
 import com.bankly.vendura.authentication.user.model.UserRepository;
 import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;

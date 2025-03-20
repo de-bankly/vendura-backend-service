@@ -1,6 +1,5 @@
-package com.bankly.vendura.authentication.roles.controller;
+package com.bankly.vendura.authentication.roles;
 
-import com.bankly.vendura.authentication.roles.RoleService;
 import com.bankly.vendura.authentication.roles.model.RoleDTO;
 import com.bankly.vendura.authentication.roles.model.RoleRepository;
 import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
