@@ -127,7 +127,8 @@ public class UserService {
   }
 
   public Login.Response authenticate(Login.Request request) {
-    Authentication authentication = this.authenticationManager.authenticate(
+    Authentication authentication =
+        this.authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
 
     SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -135,8 +136,25 @@ public class UserService {
 
     String jwtToken = this.jwtService.generateToken(userDetails);
     List<String> roles =
-            userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+        userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
 
-      return new Login.Response(jwtToken, userDetails.getUsername(), roles);
+    return new Login.Response(jwtToken, userDetails.getUsername(), roles);
+  }
+
+  public User deactivateUser(String id) {
+    User user =
+        this.userRepository
+            .findById(id)
+            .orElseThrow(
+                () ->
+                    new EntityRetrieveException(
+                        "User cannot be deactivated, because id " + id + " was not found",
+                        HttpStatus.NOT_FOUND,
+                        "id"));
+
+    user.setEnabled(false);
+    this.userRepository.save(user);
+
+    return user;
   }
 }

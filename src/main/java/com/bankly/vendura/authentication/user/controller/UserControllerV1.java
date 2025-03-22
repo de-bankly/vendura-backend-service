@@ -97,4 +97,10 @@ public class UserControllerV1 {
   public ResponseEntity<?> updateUser(@RequestBody UserDTO userDTO, @PathVariable("id") String id) {
     return ResponseEntity.ok(UserDTO.fromUser(this.userService.updateUser(id, userDTO)));
   }
+
+  @DeleteMapping("/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<?> deactivateUser(@PathVariable("id") String id) {
+    return ResponseEntity.ok(UserDTO.fromUser(this.userService.deactivateUser(id)));
+  }
 }
