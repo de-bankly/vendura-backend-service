@@ -30,7 +30,7 @@ public class ProductCategoryControllerV1 {
 
   @GetMapping("/{id}")
   @PreAuthorize("hasRole('POS')")
-  public ResponseEntity<ProductCategoryDTO> getProductCategoryByID(@RequestParam("id") String id) {
+  public ResponseEntity<ProductCategoryDTO> getProductCategoryByID(@PathVariable("id") String id) {
     return ResponseEntity.ok(
         ProductCategoryFactory.toDTO(
             this.productCategoryRepository
@@ -59,7 +59,7 @@ public class ProductCategoryControllerV1 {
 
   @DeleteMapping("/{id}")
   @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<?> deleteProductCategory(@RequestParam("id") String id) {
+  public ResponseEntity<?> deleteProductCategory(@PathVariable("id") String id) {
     this.productCategoryService.delete(id);
     return ResponseEntity.noContent().build();
   }

@@ -10,7 +10,10 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @Document(collection = "products")
@@ -28,13 +31,17 @@ public class Product {
 
   @DBRef private Supplier defaultSupplier;
 
+  @DBRef private Set<Product> connectedProducts = new HashSet<>();
+
+  private boolean standalone;
+
   private List<PriceHistory> priceHistories;
 
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
   public static class PriceHistory {
-    private long timestamp;
+    private Date timestamp;
     private double purchasePrice;
     private double price;
     @DBRef private Supplier supplier;

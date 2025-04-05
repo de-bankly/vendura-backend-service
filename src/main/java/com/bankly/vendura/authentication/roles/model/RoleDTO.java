@@ -14,7 +14,7 @@ public class RoleDTO {
     private Boolean active;
 
     public Role toRole() {
-        return new Role(id, name, active);
+        return new Role(id, name, active == null || active);
     }
 
     public static RoleDTO fromRole(Role role) {

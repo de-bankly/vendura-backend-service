@@ -3,6 +3,7 @@ package com.bankly.vendura.inventory.supplier.model;
 public class SupplierFactory {
 
   public static SupplierDTO toDTO(Supplier supplier) {
+    if (supplier == null) return null;
     return new SupplierDTO(
         supplier.getId(),
         supplier.getLegalName(),
@@ -14,6 +15,7 @@ public class SupplierFactory {
   }
 
   public static Supplier toEntity(SupplierDTO supplierDTO) {
+    if (supplierDTO == null) return null;
     return new Supplier(
         supplierDTO.getId(),
         supplierDTO.getLegalName(),
