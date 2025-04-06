@@ -29,4 +29,7 @@ public class User {
   private boolean enabled;
   private boolean locked;
 
+  public User(String id) {
+    this.id = id;
+  }
 }

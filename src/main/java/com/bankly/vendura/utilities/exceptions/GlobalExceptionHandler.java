@@ -18,6 +18,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(exception = Exception.class)
   public ResponseEntity<Map<String, Object>> handleExceptions(Exception exception) {
+    LOGGER.error(exception.getMessage(), exception);
     HttpStatus httpStatus = this.getHttpStatus(exception);
 
     Map<String, Object> body = this.prefillResponse(exception);

@@ -123,11 +123,31 @@ public class UserService {
       user.setEnabled(userDTO.getEnabled());
     }
 
+    if (userDTO.getRoles() != null) {
+      Set<Role> roles =
+          userDTO.getRoles().stream()
+              .map(
+                  roleDTO ->
+                      this.roleRepository
+                          .findById(roleDTO.getId())
+                          .orElseThrow(
+                              () ->
+                                  new EntityUpdateException(
+                                      "Cannot update roles because role with ID "
+                                          + roleDTO.getId()
+                                          + " not found",
+                                      HttpStatus.NOT_FOUND,
+                                      "roles")))
+              .collect(Collectors.toSet());
+      user.setRoles(roles);
+    }
+
     return this.userRepository.save(user);
   }
 
   public Login.Response authenticate(Login.Request request) {
-    Authentication authentication = this.authenticationManager.authenticate(
+    Authentication authentication =
+        this.authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
 
     SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -135,8 +155,8 @@ public class UserService {
 
     String jwtToken = this.jwtService.generateToken(userDetails);
     List<String> roles =
-            userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+        userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
 
-      return new Login.Response(jwtToken, userDetails.getUsername(), roles);
+    return new Login.Response(jwtToken, userDetails.getUsername(), roles);
   }
 }
