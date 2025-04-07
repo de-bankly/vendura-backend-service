@@ -16,4 +16,12 @@ public class EntityCreationException extends RuntimeException implements HttpSta
         this.entity = entity;
         this.transactional = transactional;
     }
+
+    public EntityCreationException(String message, HttpStatus httpStatus) {
+        super(message);
+        this.httpStatus = httpStatus;
+        this.entity = null;
+        this.transactional = false;
+    }
+
 }

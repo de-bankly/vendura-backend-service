@@ -54,7 +54,9 @@ public class CustomUserDetailsService implements UserDetailsService {
             .findUserByUsername(username)
             .orElseThrow(() -> new UsernameNotFoundException(username + " not found"));
 
-    return new User(
+    return user;
+
+    /*return new User(
         user.getUsername(),
         user.getPassword(),
         user.isEnabled(),
@@ -62,7 +64,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         true,
         !user.isLocked(),
         mapRolesToAuthorities(
-            user.getRoles().stream().filter(Role::isActive).collect(Collectors.toSet())));
+            user.getRoles().stream().filter(Role::isActive).collect(Collectors.toSet())));*/
   }
 
   /**

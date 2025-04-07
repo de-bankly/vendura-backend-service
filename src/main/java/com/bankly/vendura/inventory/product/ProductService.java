@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class ProductService {
@@ -56,16 +58,26 @@ public class ProductService {
           productDTO.getPriceHistories().stream().map(ProductFactory::toEntity).toList());
     }
 
+    if (productDTO.getStandalone() != null) {
+      product.setStandalone(productDTO.getStandalone());
+    }
+
+    if (productDTO.getConnectedProducts() != null) {
+      product.setConnectedProducts(
+          productDTO.getConnectedProducts().stream()
+              .map(ProductFactory::toEntity)
+              .collect(Collectors.toSet()));
+    }
+
     return this.productRepository.save(product);
   }
 
-
   public void delete(String id) {
     Product product =
-            this.productRepository
-                    .findById(id)
-                    .orElseThrow(
-                            () -> new EntityRetrieveException("Product not found", HttpStatus.NOT_FOUND, id));
+        this.productRepository
+            .findById(id)
+            .orElseThrow(
+                () -> new EntityRetrieveException("Product not found", HttpStatus.NOT_FOUND, id));
 
     this.productRepository.delete(product);
   }

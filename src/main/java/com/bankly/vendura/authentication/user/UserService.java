@@ -11,7 +11,7 @@ import com.bankly.vendura.authentication.user.model.UserRepository;
 import com.bankly.vendura.utilities.exceptions.EntityCreationException;
 import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
 import com.bankly.vendura.utilities.exceptions.EntityUpdateException;
-import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -151,12 +150,23 @@ public class UserService {
             new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
 
     SecurityContextHolder.getContext().setAuthentication(authentication);
-    UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+    User user = (User) authentication.getPrincipal();
 
-    String jwtToken = this.jwtService.generateToken(userDetails);
-    List<String> roles =
-        userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+    String jwtToken = this.jwtService.generateToken(user);
 
-    return new Login.Response(jwtToken, userDetails.getUsername(), roles);
+    return new Login.Response(
+        jwtToken,
+        user.getUsername(),
+        user.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .collect(Collectors.toList()));
+  }
+
+  public Optional<User> findByUsername(String username) {
+    return this.userRepository.findUserByUsername(username);
+  }
+
+  public Optional<User> findById(String id) {
+    return this.userRepository.findById(id);
   }
 }
