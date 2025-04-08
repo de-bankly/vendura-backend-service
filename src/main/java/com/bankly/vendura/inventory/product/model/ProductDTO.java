@@ -19,11 +19,20 @@ public class ProductDTO {
 
     private String id;
     private String name;
+    private String shortDescription;
+    private String longDescription;
+    private String sku;
     private ProductCategoryDTO productCategory;
     private BrandDTO brand;
 
     private SupplierDTO defaultSupplier;
-
+    
+    private Long minStockLevel;
+    private Long maxStockLevel;
+    private Long reorderPoint;
+    private Long reorderQuantity;
+    private Long leadTimeInDays;
+    
     private Set<ProductDTO> connectedProducts;
     private Boolean standalone;
 

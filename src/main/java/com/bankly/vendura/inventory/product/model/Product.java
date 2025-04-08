@@ -25,11 +25,31 @@ public class Product {
 
   private String name;
 
+  private String shortDescription;
+
+  private String longDescription;
+
+  private String sku;
+
   @DBRef private ProductCategory productCategory;
 
   @DBRef private Brand brand;
 
   @DBRef private Supplier defaultSupplier;
+
+  private Long minStockLevel;
+
+  private Long maxStockLevel;
+
+  private Long reorderPoint;
+
+  private Long reorderQuantity;
+
+  private Long leadTimeInDays;
+
+  private double price;
+
+  private double purchasePrice;
 
   @DBRef private Set<Product> connectedProducts = new HashSet<>();
 
