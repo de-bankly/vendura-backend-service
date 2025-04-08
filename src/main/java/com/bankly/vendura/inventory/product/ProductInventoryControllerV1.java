@@ -3,6 +3,7 @@ package com.bankly.vendura.inventory.product;
 import com.bankly.vendura.inventory.product.model.Product;
 import com.bankly.vendura.inventory.product.model.ProductDTO;
 import com.bankly.vendura.inventory.product.model.ProductFactory;
+import com.bankly.vendura.inventory.transactions.product.ProductTransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 public class ProductInventoryControllerV1 {
 
     private final ProductStockService productStockService;
+    private final ProductTransactionService productTransactionService;
 
     /**
      * Get all products that are low on stock
@@ -29,7 +31,11 @@ public class ProductInventoryControllerV1 {
         List<Product> products = productStockService.getProductsLowOnStock();
         
         List<ProductDTO> productDTOs = products.stream()
-                .map(ProductFactory::toDTO)
+                .map(product -> {
+                    ProductDTO dto = ProductFactory.toDTO(product);
+                    dto.setCurrentStock(productTransactionService.calculateCurrentStock(product.getId()));
+                    return dto;
+                })
                 .collect(Collectors.toList());
                 
         return ResponseEntity.ok(productDTOs);

@@ -92,12 +92,19 @@ public class ProductStockService {
      * Check if product is low on stock
      */
     public boolean isLowOnStock(Product product) {
-        if (product.getMinStockLevel() == null) {
-            return false;
+        long currentStock = transactionService.calculateCurrentStock(product);
+        
+        // Products with zero stock are always considered low on stock
+        if (currentStock <= 0) {
+            return true;
         }
         
-        long currentStock = transactionService.calculateCurrentStock(product);
-        return currentStock <= product.getMinStockLevel();
+        // For products with stock > 0, check against minStockLevel if available
+        if (product.getMinStockLevel() != null) {
+            return currentStock <= product.getMinStockLevel();
+        }
+        
+        return false;
     }
     
     /**
