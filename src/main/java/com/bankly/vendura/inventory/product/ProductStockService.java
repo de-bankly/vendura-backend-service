@@ -40,8 +40,7 @@ public class ProductStockService {
                 continue; // Skip products without supplier or reorder point
             }
             
-            long currentStock = transactionService.calculateCurrentStock(product);
-            
+            long currentStock = transactionService.calculateCurrentStock(product.getId());
             // Check if stock is below reorder point
             if (currentStock <= product.getReorderPoint()) {
                 productsToReorder
