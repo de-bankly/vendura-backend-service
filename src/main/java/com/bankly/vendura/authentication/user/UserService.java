@@ -57,8 +57,7 @@ public class UserService {
     user.setEnabled(userDTO.getEnabled() == null || userDTO.getEnabled());
     user.setLocked(userDTO.getLocked() == null || userDTO.getLocked());
 
-    Set<String> roleIds =
-        userDTO.getRoles().stream().map(RoleDTO::getId).collect(Collectors.toSet());
+    Set<String> roleIds = userDTO.getRoles();
 
     for (String roleId : roleIds) {
       Role role =
@@ -127,14 +126,14 @@ public class UserService {
       Set<Role> roles =
           userDTO.getRoles().stream()
               .map(
-                  roleDTO ->
+                  roleId ->
                       this.roleRepository
-                          .findById(roleDTO.getId())
+                          .findById(roleId)
                           .orElseThrow(
                               () ->
                                   new EntityUpdateException(
                                       "Cannot update roles because role with ID "
-                                          + roleDTO.getId()
+                                          + roleId
                                           + " not found",
                                       HttpStatus.NOT_FOUND,
                                       "roles")))
