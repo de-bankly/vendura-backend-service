@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +29,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class SupplierOrderService {
 
+  private static final Logger logger = LoggerFactory.getLogger(SupplierOrderService.class);
+  
   private final ProductTransactionService productTransactionService;
   private final UserRepository userRepository;
   private final SupplierOrderRepository supplierOrderRepository;
@@ -150,6 +154,8 @@ public class SupplierOrderService {
           && supplierOrder.getOrderStatus() != SupplierOrder.OrderStatus.DELIVERED) {
 
         User user = this.userRepository.findUserByUsername(username).orElseThrow();
+        
+        logger.info("Creating inventory transactions for supplier order {} marked as DELIVERED", id);
 
         for (SupplierOrder.Position position : supplierOrder.getPositions()) {
           this.productTransactionService.createTransaction(
@@ -158,7 +164,12 @@ public class SupplierOrderService {
               supplierOrder,
               user,
               "Automatic entry in the warehouse because the status of the supplier order has been changed to DELIVERED");
+              
+          logger.info("Created transaction for product {} with quantity {}", 
+              position.getProduct().getId(), position.getAmount());
         }
+        
+        logger.info("All transactions created successfully for supplier order {}", id);
       }
 
       supplierOrder.setOrderStatus(supplierOrderDTO.getOrderStatus().toEntityStatus());

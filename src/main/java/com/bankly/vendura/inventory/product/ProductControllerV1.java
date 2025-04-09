@@ -29,8 +29,20 @@ public class ProductControllerV1 {
 
   @GetMapping
   @PreAuthorize("hasRole('POS')")
-  public ResponseEntity<Page<ProductDTO>> getProducts(Pageable pageable) {
-    return ResponseEntity.ok(this.productRepository.findAll(pageable).map(ProductFactory::toDTO));
+  public ResponseEntity<Page<ProductDTO>> getProducts(
+      Pageable pageable,
+      @RequestParam(required = false, name = "calculateStock", defaultValue = "false")
+          boolean calculateStock) {
+    
+    Page<ProductDTO> productDTOPage = this.productRepository.findAll(pageable).map(ProductFactory::toDTO);
+    
+    if (calculateStock) {
+      productDTOPage.getContent().forEach(productDTO -> {
+        productDTO.setCurrentStock(productTransactionService.calculateCurrentStock(productDTO.getId()));
+      });
+    }
+    
+    return ResponseEntity.ok(productDTOPage);
   }
 
   @GetMapping("/{id}")
