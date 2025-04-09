@@ -52,7 +52,7 @@ public class ProductCategoryControllerV1 {
   @PutMapping("/{id}")
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<ProductCategoryDTO> updateProductCategory(
-      @RequestParam("id") String id, @RequestBody ProductCategoryDTO productCategoryDTO) {
+      @PathVariable("id") String id, @RequestBody ProductCategoryDTO productCategoryDTO) {
     return ResponseEntity.ok(
         ProductCategoryFactory.toDTO(this.productCategoryService.update(id, productCategoryDTO)));
   }
