@@ -4,6 +4,7 @@ import com.bankly.vendura.inventory.supplier.model.Supplier;
 import com.bankly.vendura.inventory.supplier.model.SupplierDTO;
 import com.bankly.vendura.inventory.supplier.model.SupplierFactory;
 import com.bankly.vendura.inventory.supplier.model.SupplierRepository;
+import com.bankly.vendura.utilities.exceptions.EntityCreationException;
 import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
 import com.bankly.vendura.utilities.exceptions.EntityUpdateException;
 import lombok.RequiredArgsConstructor;
