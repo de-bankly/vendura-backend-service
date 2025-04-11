@@ -7,11 +7,15 @@ import com.bankly.vendura.inventory.transactions.product.model.ProductTransactio
 import com.bankly.vendura.inventory.transactions.product.model.ProductTransactionRepository;
 import com.bankly.vendura.inventory.transactions.product.model.StockAggregationResult;
 import java.util.Date;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -32,7 +36,8 @@ public class ProductTransactionService {
             .product(product)
             .quantity(quantity)
             .transactionCause(transactionCause)
-            .transactionType(transactionCause.getTransactionType())
+            .transactionType(transactionCause != null ? transactionCause.getTransactionType() : 
+                quantity > 0 ? ProductTransaction.TransactionType.WAREHOUSE_IN : ProductTransaction.TransactionType.WAREHOUSE_OUT)
             .issuer(issuer)
             .message(message)
             .timestamp(new Date())
@@ -56,5 +61,24 @@ public class ProductTransactionService {
             .getUniqueMappedResult();
 
     return result == null ? 0 : result.getQuantity();
+  }
+  
+  /**
+   * Find all transactions for a product
+   * @param productId The product ID
+   * @param pageable Pagination parameters
+   * @return Page of transactions
+   */
+  public Page<ProductTransaction> findTransactionsByProductId(String productId, Pageable pageable) {
+    return productTransactionRepository.findByProductIdOrderByTimestampDesc(productId, pageable);
+  }
+  
+  /**
+   * Find all transactions in the system
+   * @param pageable Pagination parameters
+   * @return Page of transactions
+   */
+  public Page<ProductTransaction> findAllTransactions(Pageable pageable) {
+    return productTransactionRepository.findAllByOrderByTimestampDesc(pageable);
   }
 }

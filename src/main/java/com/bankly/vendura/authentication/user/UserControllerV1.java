@@ -1,6 +1,7 @@
 package com.bankly.vendura.authentication.user;
 
 import com.bankly.vendura.authentication.user.model.UserDTO;
+import com.bankly.vendura.authentication.user.model.UserFactory;
 import com.bankly.vendura.authentication.user.model.UserRepository;
 import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class UserControllerV1 {
   public ResponseEntity<?> getAuthenticatedUser(Authentication authentication) {
     return ResponseEntity.ok()
         .body(
-            UserDTO.fromUser(
+            UserFactory.toDTO(
                 this.userRepository
                     .findUserByUsername(authentication.getName())
                     .orElseThrow(
@@ -50,7 +51,7 @@ public class UserControllerV1 {
   @GetMapping
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<?> getAllUsersPageable(Pageable pageable) {
-    return ResponseEntity.ok().body(this.userRepository.findAll(pageable).map(UserDTO::fromUser));
+    return ResponseEntity.ok().body(this.userRepository.findAll(pageable).map(UserFactory::toDTO));
   }
 
   /**
@@ -63,7 +64,7 @@ public class UserControllerV1 {
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<?> getUserById(@PathVariable("id") String id) {
     return ResponseEntity.ok(
-        UserDTO.fromUser(
+        UserFactory.toDTO(
             this.userRepository
                 .findById(id)
                 .orElseThrow(
@@ -81,7 +82,7 @@ public class UserControllerV1 {
   @PostMapping
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<?> createUser(@RequestBody UserDTO userDTO) {
-    return ResponseEntity.ok().body(UserDTO.fromUser(this.userService.createUser(userDTO)));
+    return ResponseEntity.ok().body(UserFactory.toDTO(this.userService.createUser(userDTO)));
   }
 
   /**
@@ -94,6 +95,6 @@ public class UserControllerV1 {
   @PutMapping("/{id}")
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<?> updateUser(@RequestBody UserDTO userDTO, @PathVariable("id") String id) {
-    return ResponseEntity.ok(UserDTO.fromUser(this.userService.updateUser(id, userDTO)));
+    return ResponseEntity.ok(UserFactory.toDTO(this.userService.updateUser(id, userDTO)));
   }
 }

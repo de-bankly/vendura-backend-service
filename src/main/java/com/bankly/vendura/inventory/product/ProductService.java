@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -28,7 +29,28 @@ public class ProductService {
     }
 
     Product product = ProductFactory.toEntity(productDTO);
+    
+    // Auto-generate ID if it's null
+    if (product.getId() == null) {
+      product.setId(generateUniqueProductId());
+    }
+    
     return this.productRepository.save(product);
+  }
+  
+  /**
+   * Generates a unique product ID that doesn't already exist in the database
+   * @return A unique formatted product ID
+   */
+  private String generateUniqueProductId() {
+    String productId;
+    do {
+      // Generate an 8-character ID
+      productId = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+      // Check if this ID already exists
+    } while (this.productRepository.existsById(productId));
+    
+    return productId;
   }
 
   public Product update(String id, ProductDTO productDTO) {
@@ -74,7 +96,6 @@ public class ProductService {
 
     return this.productRepository.save(product);
   }
-
 
   public void delete(String id) {
     Product product =

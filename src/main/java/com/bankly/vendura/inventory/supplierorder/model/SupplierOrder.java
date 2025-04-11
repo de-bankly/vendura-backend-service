@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import com.bankly.vendura.inventory.supplier.model.Supplier;
 
 @Data
 @Document(collection = "supplier_orders")
@@ -23,6 +24,13 @@ public class SupplierOrder implements ProductTransactable {
   @Id private String id;
 
   private Date timestamp;
+  
+  @DBRef private Supplier supplier;
+  
+  private String purchaseOrderNumber;
+  private Date expectedDeliveryDate;
+  private String notes;
+  private boolean isAutomaticOrder;
 
   private Set<Position> positions;
 
