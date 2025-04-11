@@ -29,7 +29,7 @@ public class SupplierOrder implements ProductTransactable {
   
   private Date expectedDeliveryDate;
   private String notes;
-  private boolean isAutomaticOrder;
+  private boolean automaticOrder;
 
   private Set<Position> positions;
 

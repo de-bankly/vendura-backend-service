@@ -32,5 +32,5 @@ public interface SupplierOrderRepository extends MongoRepository<SupplierOrder, 
     /**
      * Find automatic supplier orders
      */
-    Page<SupplierOrder> findByIsAutomaticOrder(boolean isAutomaticOrder, Pageable pageable);
+    Page<SupplierOrder> findByAutomaticOrder(boolean isAutomaticOrder, Pageable pageable);
 }

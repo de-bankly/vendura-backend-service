@@ -59,7 +59,7 @@ public class SupplierOrderControllerV1 {
   public ResponseEntity<Page<SupplierOrderDTO>> getAutomaticSupplierOrders(
       @PathVariable("isAutomatic") boolean isAutomatic, Pageable pageable) {
     return ResponseEntity.ok(
-        this.supplierOrderRepository.findByIsAutomaticOrder(isAutomatic, pageable).map(SupplierOrderFactory::toDTO));
+        this.supplierOrderRepository.findIsAutomaticOrder(isAutomatic, pageable).map(SupplierOrderFactory::toDTO));
   }
   
   @GetMapping("/pending")
