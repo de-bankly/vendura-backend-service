@@ -8,6 +8,7 @@ public class VenduraBackendApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(VenduraBackendApplication.class, args);
+		System.out.println("XXX");
 	}
 
 }
