@@ -3,6 +3,7 @@ package com.bankly.vendura.inventory.supplierorder.model;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 
 import java.util.Date;
 import java.util.List;
@@ -21,8 +22,12 @@ public interface SupplierOrderRepository extends MongoRepository<SupplierOrder, 
     
     /**
      * Find supplier orders by supplier
+     * @param supplierId The supplier ID
+     * @param pageable Pagination parameters
+     * @return Page of supplier orders
      */
-    Page<SupplierOrder> findBySupplier_Id(String supplierId, Pageable pageable);
+    @Query("{ 'supplier._id': ?0 }")
+    Page<SupplierOrder> findBySupplierIdOrderByCreatedAtDesc(String supplierId, Pageable pageable);
     
     /**
      * Find supplier orders by expected delivery date range
