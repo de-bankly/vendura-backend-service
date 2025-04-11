@@ -27,7 +27,6 @@ public class SupplierOrder implements ProductTransactable {
   
   @DBRef private Supplier supplier;
   
-  private String purchaseOrderNumber;
   private Date expectedDeliveryDate;
   private String notes;
   private boolean isAutomaticOrder;

@@ -50,19 +50,8 @@ public class SupplierOrderService {
       supplierOrderDTO.setOrderStatus(SupplierOrderDTO.OrderStatus.PLACED);
     }
     
-    if (supplierOrderDTO.getPurchaseOrderNumber() == null || supplierOrderDTO.getPurchaseOrderNumber().isEmpty()) {
-      supplierOrderDTO.setPurchaseOrderNumber(generatePurchaseOrderNumber());
-    }
-    
     SupplierOrder supplierOrder = SupplierOrderFactory.fromDTO(supplierOrderDTO);
     return this.supplierOrderRepository.save(supplierOrder);
-  }
-
-  /**
-   * Generate a unique purchase order number
-   */
-  private String generatePurchaseOrderNumber() {
-    return "PO-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
   }
 
   /**
@@ -113,11 +102,6 @@ public class SupplierOrderService {
                           "Supplier not found", 
                           HttpStatus.NOT_FOUND, 
                           supplierOrderDTO.getSupplier().getId())));
-    }
-    
-    // Update other fields if provided
-    if (supplierOrderDTO.getPurchaseOrderNumber() != null) {
-      supplierOrder.setPurchaseOrderNumber(supplierOrderDTO.getPurchaseOrderNumber());
     }
     
     if (supplierOrderDTO.getExpectedDeliveryDate() != null) {

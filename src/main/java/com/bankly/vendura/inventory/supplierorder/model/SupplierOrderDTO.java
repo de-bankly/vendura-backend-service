@@ -18,7 +18,6 @@ public class SupplierOrderDTO {
   
   private SupplierDTO supplier;
   
-  private String purchaseOrderNumber;
   private Date expectedDeliveryDate;
   private String notes;
   private boolean isAutomaticOrder;
