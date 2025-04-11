@@ -30,6 +30,12 @@ public class ProductFactory {
             .map(ProductFactory::toDTO)
             .collect(Collectors.toSet()));
     productDTO.setStandalone(product.isStandalone());
+    
+    // Transform priceHistories if available
+    if (product.getPriceHistories() != null) {
+      productDTO.setPriceHistories(
+          product.getPriceHistories().stream().map(ProductFactory::toDTO).collect(Collectors.toList()));
+    }
 
     return productDTO;
   }
@@ -59,6 +65,12 @@ public class ProductFactory {
     }
     
     product.setStandalone(productDTO.getStandalone() != null ? productDTO.getStandalone() : true);
+    
+    // Transform priceHistories if available
+    if (productDTO.getPriceHistories() != null) {
+      product.setPriceHistories(
+          productDTO.getPriceHistories().stream().map(ProductFactory::toEntity).collect(Collectors.toList()));
+    }
 
     return product;
   }
@@ -67,7 +79,7 @@ public class ProductFactory {
     return new ProductDTO.PriceHistoryDTO(
         priceHistory.getTimestamp(),
         priceHistory.getPurchasePrice(),
-        priceHistory.getPurchasePrice(),
+        priceHistory.getPrice(),
         SupplierFactory.toDTO(priceHistory.getSupplier()));
   }
 

@@ -64,16 +64,8 @@ public class SupplierOrder implements ProductTransactable {
     double currentPrice = 0;
 
     for (Position position : this.positions) {
-      Product.PriceHistory priceHistory =
-          position.getProduct().getPriceHistories().stream()
-              .filter(
-                  productPriceHistory -> productPriceHistory.getTimestamp().before(this.timestamp))
-              .max(Comparator.comparing(Product.PriceHistory::getTimestamp))
-              .orElse(null);
-
-      if (priceHistory != null) {
-        currentPrice += priceHistory.getPurchasePrice() * position.getAmount();
-      }
+      double purchasePrice = position.getProduct().getPurchasePriceAtDate(this.timestamp);
+      currentPrice += purchasePrice * position.getAmount();
     }
 
     return currentPrice;
