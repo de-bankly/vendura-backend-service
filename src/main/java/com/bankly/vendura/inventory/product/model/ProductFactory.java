@@ -17,7 +17,6 @@ public class ProductFactory {
     productDTO.setName(product.getName());
     productDTO.setShortDescription(product.getShortDescription());
     productDTO.setLongDescription(product.getLongDescription());
-    productDTO.setSku(product.getSku());
     productDTO.setProductCategory(ProductCategoryFactory.toDTO(product.getProductCategory()));
     productDTO.setBrand(BrandFactory.toDTO(product.getBrand()));
     productDTO.setDefaultSupplier(SupplierFactory.toDTO(product.getDefaultSupplier()));
@@ -43,7 +42,6 @@ public class ProductFactory {
     product.setName(productDTO.getName());
     product.setShortDescription(productDTO.getShortDescription());
     product.setLongDescription(productDTO.getLongDescription());
-    product.setSku(productDTO.getSku());
     product.setProductCategory(ProductCategoryFactory.toEntity(productDTO.getProductCategory()));
     product.setBrand(BrandFactory.toEntity(productDTO.getBrand()));
     product.setDefaultSupplier(SupplierFactory.toEntity(productDTO.getDefaultSupplier()));

@@ -29,8 +29,6 @@ public class Product {
 
   private String longDescription;
 
-  private String sku;
-
   @DBRef private ProductCategory productCategory;
 
   @DBRef private Brand brand;

@@ -21,7 +21,6 @@ public class ProductDTO {
     private String name;
     private String shortDescription;
     private String longDescription;
-    private String sku;
     private ProductCategoryDTO productCategory;
     private BrandDTO brand;
 
