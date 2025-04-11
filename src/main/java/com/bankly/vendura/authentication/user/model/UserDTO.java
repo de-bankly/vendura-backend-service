@@ -23,20 +23,4 @@ public class UserDTO {
     private Boolean enabled;
     private Boolean locked;
     private Set<String> roles;
-    
-    public static UserDTO fromUser(User user) {
-        if (user == null) {
-            return null;
-        }
-        
-        return UserDTO.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .enabled(user.isEnabled())
-                .locked(user.isLocked())
-                .roles(user.getRoles().stream()
-                        .map(Role::getId)
-                        .collect(Collectors.toSet()))
-                .build();
-    }
 }

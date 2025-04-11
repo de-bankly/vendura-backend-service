@@ -20,4 +20,22 @@ public class UserFactory {
                         .collect(Collectors.toSet()))
                 .build();
     }
+    
+    public static User toEntity(UserDTO userDTO) {
+        if (userDTO == null) {
+            return null;
+        }
+        
+        User user = new User();
+        user.setId(userDTO.getId());
+        user.setUsername(userDTO.getUsername());
+        user.setPassword(userDTO.getPassword());
+        user.setEnabled(userDTO.getEnabled() == null || userDTO.getEnabled());
+        user.setLocked(userDTO.getLocked() == null || userDTO.getLocked());
+        
+        // Note: Converting Role IDs to Role entities would require a RoleRepository,
+        // which is not available to this factory method. This should be handled at the service level.
+        
+        return user;
+    }
 } 
