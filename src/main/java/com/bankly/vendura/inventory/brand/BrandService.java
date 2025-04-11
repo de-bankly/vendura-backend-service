@@ -3,6 +3,7 @@ package com.bankly.vendura.inventory.brand;
 import com.bankly.vendura.inventory.brand.model.Brand;
 import com.bankly.vendura.inventory.brand.model.BrandDTO;
 import com.bankly.vendura.inventory.brand.model.BrandRepository;
+import com.bankly.vendura.utilities.exceptions.EntityCreationException;
 import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,11 @@ public class BrandService {
   private final BrandRepository brandRepository;
 
   public Brand createBrand(BrandDTO brandDTO) {
+
+    if (this.brandRepository.findByName(brandDTO.getName()).isPresent()) {
+      throw new EntityCreationException(
+          "Brand with that name already exists", HttpStatus.CONFLICT, brandDTO.getName(), false);
+    }
 
     Brand brand = new Brand();
 
@@ -32,6 +38,10 @@ public class BrandService {
                 () -> new EntityRetrieveException("Brand not found", HttpStatus.NOT_FOUND, id));
 
     if (brandDTO.getName() != null) {
+      if (this.brandRepository.findByName(brandDTO.getName()).isPresent()) {
+        throw new EntityCreationException(
+            "Brand with that name already exists", HttpStatus.CONFLICT, brandDTO.getName(), false);
+      }
       brand.setName(brandDTO.getName());
     }
 
@@ -40,10 +50,10 @@ public class BrandService {
 
   public void deleteBrand(String id) {
     Brand brand =
-            this.brandRepository
-                    .findById(id)
-                    .orElseThrow(
-                            () -> new EntityRetrieveException("Brand not found", HttpStatus.NOT_FOUND, id));
+        this.brandRepository
+            .findById(id)
+            .orElseThrow(
+                () -> new EntityRetrieveException("Brand not found", HttpStatus.NOT_FOUND, id));
 
     this.brandRepository.delete(brand);
   }

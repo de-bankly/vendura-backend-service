@@ -2,4 +2,10 @@ package com.bankly.vendura.inventory.product.model;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-public interface ProductRepository extends MongoRepository<Product, String> {}
+import java.util.Optional;
+
+public interface ProductRepository extends MongoRepository<Product, String> {
+
+    Optional<Product> findByName(String name);
+
+}
