@@ -40,7 +40,7 @@ public class SupplierOrderControllerV1 {
     try {
       SupplierOrder.OrderStatus orderStatus = SupplierOrder.OrderStatus.valueOf(status.toUpperCase());
       return ResponseEntity.ok(
-          this.supplierOrderRepository.findByOrderStatus(orderStatus, pageable).map(SupplierOrderFactory::toDTO));
+          this.supplierOrderService.getSupplierOrdersByStatus(orderStatus, pageable).map(SupplierOrderFactory::toDTO));
     } catch (IllegalArgumentException e) {
       throw new EntityRetrieveException("Invalid order status", HttpStatus.BAD_REQUEST, status);
     }
@@ -51,7 +51,7 @@ public class SupplierOrderControllerV1 {
   public ResponseEntity<Page<SupplierOrderDTO>> getSupplierOrdersBySupplierId(
       @PathVariable("supplierId") String supplierId, Pageable pageable) {
     return ResponseEntity.ok(
-        this.supplierOrderRepository.findBySupplier_Id(supplierId, pageable).map(SupplierOrderFactory::toDTO));
+        this.supplierOrderService.getSupplierOrdersBySupplierId(supplierId, pageable).map(SupplierOrderFactory::toDTO));
   }
   
   @GetMapping("/automatic/{isAutomatic}")
@@ -59,7 +59,7 @@ public class SupplierOrderControllerV1 {
   public ResponseEntity<Page<SupplierOrderDTO>> getAutomaticSupplierOrders(
       @PathVariable("isAutomatic") boolean isAutomatic, Pageable pageable) {
     return ResponseEntity.ok(
-        this.supplierOrderRepository.findIsAutomaticOrder(isAutomatic, pageable).map(SupplierOrderFactory::toDTO));
+        this.supplierOrderService.getAutomaticSupplierOrders(isAutomatic, pageable).map(SupplierOrderFactory::toDTO));
   }
   
   @GetMapping("/pending")

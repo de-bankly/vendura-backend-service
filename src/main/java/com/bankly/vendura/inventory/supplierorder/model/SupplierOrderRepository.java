@@ -38,4 +38,22 @@ public interface SupplierOrderRepository extends MongoRepository<SupplierOrder, 
      * Find automatic supplier orders
      */
     Page<SupplierOrder> findByAutomaticOrder(boolean isAutomaticOrder, Pageable pageable);
+    
+    /**
+     * Find supplier orders by supplier ID
+     * @param supplierId The supplier ID
+     * @param pageable Pagination parameters
+     * @return Page of supplier orders
+     */
+    @Query("{ 'supplier._id': ?0 }")
+    Page<SupplierOrder> findBySupplier_Id(String supplierId, Pageable pageable);
+    
+    /**
+     * Find supplier orders by automatic order flag
+     * @param isAutomatic Whether the order is automatic
+     * @param pageable Pagination parameters
+     * @return Page of supplier orders
+     */
+    @Query("{ 'automaticOrder': ?0 }")
+    Page<SupplierOrder> findIsAutomaticOrder(boolean isAutomatic, Pageable pageable);
 }

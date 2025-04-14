@@ -60,6 +60,20 @@ public class SupplierOrderService {
   public Page<SupplierOrder> getSupplierOrdersByStatus(SupplierOrder.OrderStatus status, Pageable pageable) {
     return supplierOrderRepository.findByOrderStatus(status, pageable);
   }
+  
+  /**
+   * Get supplier orders by supplier ID
+   */
+  public Page<SupplierOrder> getSupplierOrdersBySupplierId(String supplierId, Pageable pageable) {
+    return supplierOrderRepository.findBySupplier_Id(supplierId, pageable);
+  }
+  
+  /**
+   * Get supplier orders by automatic order flag
+   */
+  public Page<SupplierOrder> getAutomaticSupplierOrders(boolean isAutomatic, Pageable pageable) {
+    return supplierOrderRepository.findIsAutomaticOrder(isAutomatic, pageable);
+  }
 
   /**
    * Find pending supplier orders
@@ -110,6 +124,10 @@ public class SupplierOrderService {
     
     if (supplierOrderDTO.getNotes() != null) {
       supplierOrder.setNotes(supplierOrderDTO.getNotes());
+    }
+    
+    if (supplierOrderDTO.isAutomaticOrder() != supplierOrder.isAutomaticOrder()) {
+      supplierOrder.setAutomaticOrder(supplierOrderDTO.isAutomaticOrder());
     }
 
     if (supplierOrderDTO.getPositions() != null) {
