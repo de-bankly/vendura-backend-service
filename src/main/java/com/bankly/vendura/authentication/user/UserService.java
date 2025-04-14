@@ -53,6 +53,11 @@ public class UserService {
     User user = new User();
     user.setUsername(username);
     user.setPassword(this.passwordEncoder.encode(passwordPlain));
+    
+    // Set additional user information if provided
+    user.setFirstName(userDTO.getFirstName());
+    user.setLastName(userDTO.getLastName());
+    user.setEmail(userDTO.getEmail());
 
     user.setEnabled(userDTO.getEnabled() == null || userDTO.getEnabled());
     user.setLocked(userDTO.getLocked() == null || userDTO.getLocked());
@@ -112,6 +117,19 @@ public class UserService {
                       true));
 
       user.setUsername(userDTO.getUsername());
+    }
+    
+    // Update user information if provided
+    if (userDTO.getFirstName() != null) {
+      user.setFirstName(userDTO.getFirstName());
+    }
+    
+    if (userDTO.getLastName() != null) {
+      user.setLastName(userDTO.getLastName());
+    }
+    
+    if (userDTO.getEmail() != null) {
+      user.setEmail(userDTO.getEmail());
     }
 
     if (userDTO.getLocked() != null && user.isLocked() != userDTO.getLocked()) {

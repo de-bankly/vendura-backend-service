@@ -13,6 +13,9 @@ public class UserFactory {
         return UserDTO.builder()
                 .id(user.getId())
                 .username(user.getUsername())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
                 .enabled(user.isEnabled())
                 .locked(user.isLocked())
                 .roles(user.getRoles().stream()
@@ -29,6 +32,9 @@ public class UserFactory {
         User user = new User();
         user.setId(userDTO.getId());
         user.setUsername(userDTO.getUsername());
+        user.setFirstName(userDTO.getFirstName());
+        user.setLastName(userDTO.getLastName());
+        user.setEmail(userDTO.getEmail());
         user.setPassword(userDTO.getPassword());
         user.setEnabled(userDTO.getEnabled() == null || userDTO.getEnabled());
         user.setLocked(userDTO.getLocked() == null || userDTO.getLocked());
