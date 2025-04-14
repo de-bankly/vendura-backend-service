@@ -3,6 +3,7 @@ package com.bankly.vendura.authentication.security;
 import com.bankly.vendura.authentication.user.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,6 +24,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * This class handles the Spring Web Security filter chain and provides basic Beans for the
@@ -36,6 +38,9 @@ public class SecurityConfig {
 
   private final UserDetailsService userDetailsService;
   private final AuthTokenFilter authTokenFilter;
+
+  @Value("${vendura.allowed.origins}")
+  private final List<String> allowedOrigins;
 
   /**
    * This method configures the default security filter chain for the application.
@@ -79,7 +84,7 @@ public class SecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+    configuration.setAllowedOrigins(this.allowedOrigins);
     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
     configuration.setAllowCredentials(true);

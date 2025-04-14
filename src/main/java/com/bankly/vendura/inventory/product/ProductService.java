@@ -8,6 +8,7 @@ import com.bankly.vendura.inventory.product.model.ProductRepository;
 import com.bankly.vendura.inventory.productcategory.model.ProductCategoryFactory;
 import com.bankly.vendura.inventory.supplier.model.SupplierFactory;
 import com.bankly.vendura.inventory.transactions.product.ProductTransactionService;
+import com.bankly.vendura.utilities.exceptions.EntityCreationException;
 import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +64,12 @@ public class ProductService {
   }
 
   public Product create(ProductDTO productDTO) {
+
+    if (this.productRepository.findByName(productDTO.getName()).isPresent()) {
+      throw new EntityCreationException(
+              "Product with that name already exists", HttpStatus.CONFLICT, productDTO.getName(), false);
+    }
+
     Product product = ProductFactory.toEntity(productDTO);
     
     // Auto-generate ID if it's null
@@ -96,10 +103,19 @@ public class ProductService {
                 () -> new EntityRetrieveException("Product not found", HttpStatus.NOT_FOUND, id));
 
     if (productDTO.getId() != null) {
+      if (this.productRepository.findById(productDTO.getId()).isPresent()) {
+        throw new EntityCreationException(
+                "Product with that ID already exists", HttpStatus.CONFLICT, productDTO.getName(), false);
+      }
       product.setId(productDTO.getId());
     }
 
     if (productDTO.getName() != null) {
+      if (this.productRepository.findByName(productDTO.getName()).isPresent()) {
+        throw new EntityCreationException(
+                "Product with that name already exists", HttpStatus.CONFLICT, productDTO.getName(), false);
+      }
+
       product.setName(productDTO.getName());
     }
 
