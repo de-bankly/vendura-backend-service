@@ -30,6 +30,10 @@ jobs:
           --health-timeout=5s 
           --health-retries=5
 
+    env:
+      SPRING_PROFILES_ACTIVE: ci
+      MONGO_URI: mongodb://localhost:27017/test
+
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 23
