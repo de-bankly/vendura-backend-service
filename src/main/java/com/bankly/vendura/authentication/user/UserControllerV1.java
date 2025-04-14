@@ -97,4 +97,17 @@ public class UserControllerV1 {
   public ResponseEntity<?> updateUser(@RequestBody UserDTO userDTO, @PathVariable("id") String id) {
     return ResponseEntity.ok(UserFactory.toDTO(this.userService.updateUser(id, userDTO)));
   }
+
+  /**
+   * Force initialization of user data (fill missing fields)
+   * Admin only endpoint for maintenance purposes
+   * 
+   * @return success message
+   */
+  @PostMapping("/initialize-data")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<?> initializeUserData() {
+    this.userService.initializeUserData();
+    return ResponseEntity.ok().body("User data initialized successfully");
+  }
 }
