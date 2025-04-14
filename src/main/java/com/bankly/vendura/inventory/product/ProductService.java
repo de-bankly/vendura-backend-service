@@ -35,13 +35,13 @@ public class ProductService {
    */
   public Page<ProductDTO> getProducts(Pageable pageable, boolean calculateStock) {
     Page<ProductDTO> productDTOPage = this.productRepository.findAll(pageable).map(ProductFactory::toDTO);
-    
+
     if (calculateStock) {
       productDTOPage.getContent().forEach(productDTO -> {
         productDTO.setCurrentStock(productTransactionService.calculateCurrentStock(productDTO.getId()));
       });
     }
-    
+
     return productDTOPage;
   }
 
@@ -73,15 +73,15 @@ public class ProductService {
     }
 
     Product product = ProductFactory.toEntity(productDTO);
-    
+
     // Auto-generate ID if it's null
     if (product.getId() == null) {
       product.setId(generateUniqueProductId());
     }
-    
+
     return this.productRepository.save(product);
   }
-  
+
   /**
    * Generates a unique product ID that doesn't already exist in the database
    * @return A unique formatted product ID
@@ -93,7 +93,7 @@ public class ProductService {
       productId = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
       // Check if this ID already exists
     } while (this.productRepository.existsById(productId));
-    
+
     return productId;
   }
 
