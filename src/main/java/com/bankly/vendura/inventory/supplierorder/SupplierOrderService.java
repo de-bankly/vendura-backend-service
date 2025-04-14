@@ -143,6 +143,7 @@ public class SupplierOrderService {
 
     if (supplierOrderDTO.getOrderStatus() != null) {
       // Cannot change status from DELIVERED to something else
+
       if (supplierOrder.getOrderStatus() == SupplierOrder.OrderStatus.DELIVERED
           && supplierOrderDTO.getOrderStatus() != SupplierOrderDTO.OrderStatus.DELIVERED) {
         throw new EntityUpdateException(

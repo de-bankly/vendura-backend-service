@@ -22,6 +22,7 @@ public class ProductDTO {
     private String name;
     private String shortDescription;
     private String longDescription;
+  
     private ProductCategoryDTO productCategory;
     private BrandDTO brand;
 
@@ -32,7 +33,7 @@ public class ProductDTO {
     private Long reorderPoint;
     private Long reorderQuantity;
     private Long leadTimeInDays;
-    
+
     private Set<ProductDTO> connectedProducts;
     private Boolean standalone;
 
