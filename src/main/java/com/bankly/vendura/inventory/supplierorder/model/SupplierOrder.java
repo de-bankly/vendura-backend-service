@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import com.bankly.vendura.inventory.supplier.model.Supplier;
 
 @Data
 @Document(collection = "supplier_orders")
@@ -23,6 +24,12 @@ public class SupplierOrder implements ProductTransactable {
   @Id private String id;
 
   private Date timestamp;
+  
+  @DBRef private Supplier supplier;
+  
+  private Date expectedDeliveryDate;
+  private String notes;
+  private boolean automaticOrder;
 
   private Set<Position> positions;
 
@@ -56,16 +63,8 @@ public class SupplierOrder implements ProductTransactable {
     double currentPrice = 0;
 
     for (Position position : this.positions) {
-      Product.PriceHistory priceHistory =
-          position.getProduct().getPriceHistories().stream()
-              .filter(
-                  productPriceHistory -> productPriceHistory.getTimestamp().before(this.timestamp))
-              .max(Comparator.comparing(Product.PriceHistory::getTimestamp))
-              .orElse(null);
-
-      if (priceHistory != null) {
-        currentPrice += priceHistory.getPurchasePrice() * position.getAmount();
-      }
+      double purchasePrice = position.getProduct().getPurchasePriceAtDate(this.timestamp);
+      currentPrice += purchasePrice * position.getAmount();
     }
 
     return currentPrice;

@@ -3,6 +3,7 @@ package com.bankly.vendura.authentication.security;
 import com.bankly.vendura.authentication.user.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,6 +19,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * This class handles the Spring Web Security filter chain and provides basic Beans for the
@@ -32,6 +39,9 @@ public class SecurityConfig {
   private final UserDetailsService userDetailsService;
   private final AuthTokenFilter authTokenFilter;
 
+  @Value("${vendura.allowed.origins}")
+  private final List<String> allowedOrigins;
+
   /**
    * This method configures the default security filter chain for the application.
    *
@@ -44,26 +54,44 @@ public class SecurityConfig {
     // http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
     http.addFilterAfter(this.authTokenFilter, UsernamePasswordAuthenticationFilter.class);
     http.authorizeHttpRequests(
-        authorizeRequests ->
-            authorizeRequests
-                .requestMatchers("/v1/authentication/**", "/public/**", "/favicon.ico", "/swagger-ui/**")
-                .permitAll() // permitting all requests to /v1/authentication/** without
-                // authentication
-                // .requestMatchers("/error")
-                // .permitAll()
-                .anyRequest()
-                .authenticated()); // any other request must be authenticated
+            authorizeRequests ->
+                    authorizeRequests
+                            .requestMatchers("/v1/authentication/**", "/public/**", "/favicon.ico", "/swagger-ui/**")
+                            .permitAll() // permitting all requests to /v1/authentication/** without
+                            // authentication
+                            // .requestMatchers("/error")
+                            // .permitAll()
+                            .anyRequest()
+                            .authenticated()); // any other request must be authenticated
     http.sessionManagement(
-        session ->
-            session.sessionCreationPolicy(
-                SessionCreationPolicy
-                    .STATELESS)); // JWT only works with stateless authentication (no sessions)
+            session ->
+                    session.sessionCreationPolicy(
+                            SessionCreationPolicy
+                                    .STATELESS)); // JWT only works with stateless authentication (no sessions)
     // http.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin())); //
     // probably not required
     http.csrf(csrf -> csrf.disable()); // disables requirement of CSRF for POST requests
-    http.cors(cors -> cors.disable());
+    http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
 
     return http.build();
+  }
+
+  /**
+   * Configures CORS to allow requests from the frontend application
+   *
+   * @return CorsConfigurationSource bean with CORS settings
+   */
+  @Bean
+  public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration configuration = new CorsConfiguration();
+    configuration.setAllowedOrigins(this.allowedOrigins);
+    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+    configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
+    configuration.setAllowCredentials(true);
+
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
+    return source;
   }
 
   /**
@@ -102,7 +130,7 @@ public class SecurityConfig {
    */
   @Bean
   public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration)
-      throws Exception {
+          throws Exception {
     return configuration.getAuthenticationManager();
   }
 }
