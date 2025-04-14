@@ -46,7 +46,7 @@ public interface SupplierOrderRepository extends MongoRepository<SupplierOrder, 
      * @return Page of supplier orders
      */
     @Query("{ 'supplier._id': ?0 }")
-    Page<SupplierOrder> findBySupplier_Id(String supplierId, Pageable pageable);
+    Page<SupplierOrder> findBySupplierId(String supplierId, Pageable pageable);
     
     /**
      * Find supplier orders by automatic order flag

@@ -65,7 +65,7 @@ public class SupplierOrderService {
    * Get supplier orders by supplier ID
    */
   public Page<SupplierOrder> getSupplierOrdersBySupplierId(String supplierId, Pageable pageable) {
-    return supplierOrderRepository.findBySupplier_Id(supplierId, pageable);
+    return supplierOrderRepository.findBySupplierId(supplierId, pageable);
   }
   
   /**
