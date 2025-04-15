@@ -11,9 +11,11 @@ import com.bankly.vendura.authentication.user.model.UserRepository;
 import com.bankly.vendura.utilities.exceptions.EntityCreationException;
 import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
 import com.bankly.vendura.utilities.exceptions.EntityUpdateException;
+
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,180 +35,178 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class UserService {
 
-  private final UserRepository userRepository;
-  private final PasswordEncoder passwordEncoder;
-  private final RoleRepository roleRepository;
-  private final AuthenticationManager authenticationManager;
-  private final JWTService jwtService;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
+    private final AuthenticationManager authenticationManager;
+    private final JWTService jwtService;
 
-  /**
-   * Initialize user data after application startup.
-   * This ensures that existing users have firstName, lastName, and email fields set.
-   */
-  @PostConstruct
-  public void initializeUserData() {
-    List<User> allUsers = userRepository.findAll();
-    
-    for (User user : allUsers) {
-      boolean needsUpdate = false;
-      
-      if (user.getFirstName() == null) {
-        user.setFirstName(user.getUsername()); // Use username as default first name
-        needsUpdate = true;
-      }
-      
-      if (user.getLastName() == null) {
-        user.setLastName(""); // Empty string as default last name
-        needsUpdate = true;
-      }
-      
-      if (user.getEmail() == null) {
-        user.setEmail(user.getUsername() + "@example.com"); // Generate default email
-        needsUpdate = true;
-      }
-      
-      if (needsUpdate) {
-        userRepository.save(user);
-      }
-    }
-  }
+    /**
+     * Initialize user data after application startup.
+     * This ensures that existing users have firstName, lastName, and email fields set.
+     */
+    @PostConstruct
+    public void initializeUserData() {
+        List<User> allUsers = userRepository.findAll();
 
-  public User createUser(UserDTO userDTO) throws EntityCreationException {
+        for (User user : allUsers) {
+            boolean needsUpdate = false;
 
-    String username = userDTO.getUsername();
-    String passwordPlain = userDTO.getPassword();
+            if (user.getFirstName() == null) {
+                user.setFirstName(user.getUsername()); // Use username as default first name
+                needsUpdate = true;
+            }
 
-    this.userRepository
-        .findUserByUsername(username)
-        .orElseThrow(
-            () ->
-                new EntityCreationException(
-                    "Username " + username + " already exists", HttpStatus.CONFLICT, "User", true));
+            if (user.getLastName() == null) {
+                user.setLastName(""); // Empty string as default last name
+                needsUpdate = true;
+            }
 
-    User user = new User();
-    user.setUsername(username);
-    user.setPassword(this.passwordEncoder.encode(passwordPlain));
-    
-    // Set additional user information if provided
-    user.setFirstName(userDTO.getFirstName());
-    user.setLastName(userDTO.getLastName());
-    user.setEmail(userDTO.getEmail());
+            if (user.getEmail() == null) {
+                user.setEmail(user.getUsername() + "@example.com"); // Generate default email
+                needsUpdate = true;
+            }
 
-    user.setEnabled(userDTO.getEnabled() == null || userDTO.getEnabled());
-    user.setLocked(userDTO.getLocked() == null || userDTO.getLocked());
-
-    Set<String> roleIds = userDTO.getRoles();
-
-    for (String roleId : roleIds) {
-      Role role =
-          this.roleRepository
-              .findById(roleId)
-              .orElseThrow(
-                  () ->
-                      new EntityRetrieveException(
-                          "Role with " + roleId + " not found", HttpStatus.NOT_FOUND, roleId));
-
-      if (!role.isActive()) {
-        throw new EntityCreationException(
-            "Role "
-                + role.getName()
-                + "("
-                + role.getId()
-                + ") cannot be assigned due to being inactive",
-            HttpStatus.CONFLICT,
-            "User",
-            true);
-      }
-
-      user.getRoles().add(role);
+            if (needsUpdate) {
+                userRepository.save(user);
+            }
+        }
     }
 
-    return this.userRepository.save(user);
-  }
+    public User createUser(UserDTO userDTO) throws EntityCreationException {
 
-  public User updateUser(String id, UserDTO userDTO) {
-    if (userDTO.getId() != null) {
-      throw new EntityUpdateException(
-          "Cannot update user ID", HttpStatus.UNPROCESSABLE_ENTITY, "id");
+        String username = userDTO.getUsername();
+        String passwordPlain = userDTO.getPassword();
+
+        this.userRepository.findUserByUsername(username).ifPresent((user) -> {
+            throw new EntityCreationException(
+                    "Username " + username + " already exists", HttpStatus.CONFLICT, "User", true);
+        });
+
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(this.passwordEncoder.encode(passwordPlain));
+
+        // Set additional user information if provided
+        user.setFirstName(userDTO.getFirstName());
+        user.setLastName(userDTO.getLastName());
+        user.setEmail(userDTO.getEmail());
+
+        user.setEnabled(userDTO.getEnabled() == null || userDTO.getEnabled());
+        user.setLocked(userDTO.getLocked() == null || userDTO.getLocked());
+
+        Set<String> roleIds = userDTO.getRoles();
+
+        for (String roleId : roleIds) {
+            Role role =
+                    this.roleRepository
+                            .findById(roleId)
+                            .orElseThrow(
+                                    () ->
+                                            new EntityRetrieveException(
+                                                    "Role with " + roleId + " not found", HttpStatus.NOT_FOUND, roleId));
+
+            if (!role.isActive()) {
+                throw new EntityCreationException(
+                        "Role "
+                                + role.getName()
+                                + "("
+                                + role.getId()
+                                + ") cannot be assigned due to being inactive",
+                        HttpStatus.CONFLICT,
+                        "User",
+                        true);
+            }
+
+            user.getRoles().add(role);
+        }
+
+        return this.userRepository.save(user);
     }
 
-    User user =
-        this.userRepository
-            .findById(id)
-            .orElseThrow(
-                () ->
-                    new EntityRetrieveException(
-                        "User with ID " + id + " not found", HttpStatus.NOT_FOUND, id));
+    public User updateUser(String id, UserDTO userDTO) {
+        if (userDTO.getId() != null) {
+            throw new EntityUpdateException(
+                    "Cannot update user ID", HttpStatus.UNPROCESSABLE_ENTITY, "id");
+        }
 
-    if (userDTO.getUsername() != null && !user.getUsername().equals(userDTO.getUsername())) {
-      this.userRepository
-          .findUserByUsername(userDTO.getUsername())
-          .orElseThrow(
-              () ->
-                  new EntityCreationException(
-                      "User with username " + userDTO.getUsername() + " already exists",
-                      HttpStatus.CONFLICT,
-                      "User",
-                      true));
+        User user =
+                this.userRepository
+                        .findById(id)
+                        .orElseThrow(
+                                () ->
+                                        new EntityRetrieveException(
+                                                "User with ID " + id + " not found", HttpStatus.NOT_FOUND, id));
 
-      user.setUsername(userDTO.getUsername());
+        if (userDTO.getUsername() != null && !user.getUsername().equals(userDTO.getUsername())) {
+            this.userRepository
+                    .findUserByUsername(userDTO.getUsername())
+                    .orElseThrow(
+                            () ->
+                                    new EntityCreationException(
+                                            "User with username " + userDTO.getUsername() + " already exists",
+                                            HttpStatus.CONFLICT,
+                                            "User",
+                                            true));
+
+            user.setUsername(userDTO.getUsername());
+        }
+
+        // Update user information if provided
+        if (userDTO.getFirstName() != null) {
+            user.setFirstName(userDTO.getFirstName());
+        }
+
+        if (userDTO.getLastName() != null) {
+            user.setLastName(userDTO.getLastName());
+        }
+
+        if (userDTO.getEmail() != null) {
+            user.setEmail(userDTO.getEmail());
+        }
+
+        if (userDTO.getLocked() != null && user.isLocked() != userDTO.getLocked()) {
+            user.setLocked(userDTO.getLocked());
+        }
+
+        if (userDTO.getEnabled() != null && user.isEnabled() != userDTO.getEnabled()) {
+            user.setEnabled(userDTO.getEnabled());
+        }
+
+        if (userDTO.getRoles() != null) {
+            Set<Role> roles =
+                    userDTO.getRoles().stream()
+                            .map(
+                                    roleId ->
+                                            this.roleRepository
+                                                    .findById(roleId)
+                                                    .orElseThrow(
+                                                            () ->
+                                                                    new EntityUpdateException(
+                                                                            "Cannot update roles because role with ID "
+                                                                                    + roleId
+                                                                                    + " not found",
+                                                                            HttpStatus.NOT_FOUND,
+                                                                            "roles")))
+                            .collect(Collectors.toSet());
+            user.setRoles(roles);
+        }
+
+        return this.userRepository.save(user);
     }
-    
-    // Update user information if provided
-    if (userDTO.getFirstName() != null) {
-      user.setFirstName(userDTO.getFirstName());
+
+    public Login.Response authenticate(Login.Request request) {
+        Authentication authentication =
+                this.authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+        String jwtToken = this.jwtService.generateToken(userDetails);
+        List<String> roles =
+                userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+
+        return new Login.Response(jwtToken, userDetails.getUsername(), roles);
     }
-    
-    if (userDTO.getLastName() != null) {
-      user.setLastName(userDTO.getLastName());
-    }
-    
-    if (userDTO.getEmail() != null) {
-      user.setEmail(userDTO.getEmail());
-    }
-
-    if (userDTO.getLocked() != null && user.isLocked() != userDTO.getLocked()) {
-      user.setLocked(userDTO.getLocked());
-    }
-
-    if (userDTO.getEnabled() != null && user.isEnabled() != userDTO.getEnabled()) {
-      user.setEnabled(userDTO.getEnabled());
-    }
-
-    if (userDTO.getRoles() != null) {
-      Set<Role> roles =
-          userDTO.getRoles().stream()
-              .map(
-                  roleId ->
-                      this.roleRepository
-                          .findById(roleId)
-                          .orElseThrow(
-                              () ->
-                                  new EntityUpdateException(
-                                      "Cannot update roles because role with ID "
-                                          + roleId
-                                          + " not found",
-                                      HttpStatus.NOT_FOUND,
-                                      "roles")))
-              .collect(Collectors.toSet());
-      user.setRoles(roles);
-    }
-
-    return this.userRepository.save(user);
-  }
-
-  public Login.Response authenticate(Login.Request request) {
-    Authentication authentication =
-        this.authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
-
-    SecurityContextHolder.getContext().setAuthentication(authentication);
-    UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-
-    String jwtToken = this.jwtService.generateToken(userDetails);
-    List<String> roles =
-        userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
-
-    return new Login.Response(jwtToken, userDetails.getUsername(), roles);
-  }
 }
