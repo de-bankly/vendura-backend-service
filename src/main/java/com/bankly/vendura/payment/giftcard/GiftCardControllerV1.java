@@ -2,6 +2,7 @@ package com.bankly.vendura.payment.giftcard;
 
 import com.bankly.vendura.authentication.user.model.User;
 import com.bankly.vendura.payment.giftcard.transaction.GiftCardTransactionService;
+import com.bankly.vendura.payment.giftcard.transaction.GiftCardTransactionService;
 import com.bankly.vendura.payment.giftcard.model.GiftCard;
 import com.bankly.vendura.payment.giftcard.model.GiftCardDTO;
 import com.bankly.vendura.payment.giftcard.model.GiftCardFactory;
