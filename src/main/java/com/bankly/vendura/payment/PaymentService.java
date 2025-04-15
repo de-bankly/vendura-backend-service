@@ -5,6 +5,8 @@ import com.bankly.vendura.payment.model.*;
 import com.bankly.vendura.sale.model.Sale;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,10 +43,10 @@ public class PaymentService {
   }
 
   public boolean handlePaymentsOnSale(Sale sale) {
-    sale.getPayments().sort(Comparator.comparingInt(Payment::getPaymentHierarchy));
+    List<Payment> sortedPayments = sale.getPayments().stream().sorted(Comparator.comparingInt(Payment::getPaymentHierarchy)).collect(Collectors.toList());
     double remainingAmount = sale.getTotal();
     System.out.println("remainingAmount: " + remainingAmount);
-    for (Payment payment : sale.getPayments()) {
+    for (Payment payment : sortedPayments) {
       if (remainingAmount <= 0) {
         System.out.println("remainingAmount <= 0");
         sale.getPayments().remove(payment);
