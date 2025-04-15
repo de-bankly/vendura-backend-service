@@ -1,5 +1,6 @@
 package com.bankly.vendura.authentication.security;
 
+import com.bankly.vendura.authentication.user.model.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -77,12 +78,13 @@ public class AuthTokenFilter extends OncePerRequestFilter {
       this.jwtService.validateToken(
           token); // Token gets validated here, unchecked exception expected on failure
 
+      User user = this.jwtService.extractUserFromJWTOffline(token);
+
       PreAuthenticatedAuthenticationToken authentication =
           new PreAuthenticatedAuthenticationToken(
-              this.jwtService.getUsernameFromToken(token),
+              user, // User is extracted from the token
               token,
-              this.jwtService.getAuthoritiesFromToken(
-                  token)); // Authentication for Spring with external token, username and
+              user.getAuthorities()); // Authentication for Spring with external token, username and
       // authorities are parsed from the token by JWTService
 
       LOGGER.debug(

@@ -15,7 +15,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 public class GiftCard {
 
-
   @Id private String id;
 
   private Date issueDate;
@@ -25,4 +24,16 @@ public class GiftCard {
 
   @DBRef private User issuer;
 
+  private int discountPercentage;
+  private int maximumUsages;
+  private Type type;
+
+  public enum Type {
+    GIFT_CARD,
+    DISCOUNT_CARD;
+
+    public GiftCardDTO.Type toDTOType() {
+      return GiftCardDTO.Type.valueOf(this.name());
+    }
+  }
 }

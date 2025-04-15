@@ -13,6 +13,7 @@ import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
 import com.bankly.vendura.utilities.exceptions.EntityUpdateException;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,7 +26,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -177,4 +177,33 @@ public class UserService {
 
         return new Login.Response(jwtToken, userDetails.getUsername(), roles);
     }
+
+    return this.userRepository.save(user);
+  }
+
+  public Login.Response authenticate(Login.Request request) {
+    Authentication authentication =
+        this.authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+    User user = (User) authentication.getPrincipal();
+
+    String jwtToken = this.jwtService.generateToken(user);
+
+    return new Login.Response(
+        jwtToken,
+        user.getUsername(),
+        user.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .collect(Collectors.toList()));
+  }
+
+  public Optional<User> findByUsername(String username) {
+    return this.userRepository.findUserByUsername(username);
+  }
+
+  public Optional<User> findById(String id) {
+    return this.userRepository.findById(id);
+  }
 }

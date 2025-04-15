@@ -38,12 +38,23 @@ public class GiftCardTransactionService {
     return result == null ? 0 : result.getAmount();
   }
 
-  public void createTransaction(
+  public void createBalanceTransaction(
       GiftCard giftCard,
       double amount,
       GiftcardTransactable transactionCause,
       User issuer,
       String message) {
+    if (giftCard.getType() != GiftCard.Type.GIFT_CARD) {
+      throw new IllegalArgumentException("Only GIFT_CARD type is allowed for balance transactions");
+    }
+    if (amount <= 0) {
+      throw new IllegalArgumentException("Amount must be greater than zero");
+    }
+    double currentBalance = this.calculateRemainingBalance(giftCard);
+    if (currentBalance + amount < 0) {
+      throw new IllegalArgumentException("Insufficient balance for this transaction");
+    }
+
     GiftCardTransaction giftCardTransaction =
         GiftCardTransaction.builder()
             .giftCard(giftCard)
@@ -54,4 +65,14 @@ public class GiftCardTransactionService {
             .build();
     this.giftCardTransactionRepository.save(giftCardTransaction);
   }
+
+  public Integer calculateRemainingUsages(GiftCard giftCard) {
+    return this.calculateRemainingUsages(giftCard.getId());
+  }
+
+  private Integer calculateRemainingUsages(String id) {
+    return null; // TODO
+  }
+
+
 }
