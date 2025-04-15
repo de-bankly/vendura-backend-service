@@ -41,38 +41,6 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final JWTService jwtService;
 
-    /**
-     * Initialize user data after application startup.
-     * This ensures that existing users have firstName, lastName, and email fields set.
-     */
-    @PostConstruct
-    public void initializeUserData() {
-        List<User> allUsers = userRepository.findAll();
-
-        for (User user : allUsers) {
-            boolean needsUpdate = false;
-
-            if (user.getFirstName() == null) {
-                user.setFirstName(user.getUsername()); // Use username as default first name
-                needsUpdate = true;
-            }
-
-            if (user.getLastName() == null) {
-                user.setLastName(""); // Empty string as default last name
-                needsUpdate = true;
-            }
-
-            if (user.getEmail() == null) {
-                user.setEmail(user.getUsername() + "@example.com"); // Generate default email
-                needsUpdate = true;
-            }
-
-            if (needsUpdate) {
-                userRepository.save(user);
-            }
-        }
-    }
-
     public User createUser(UserDTO userDTO) throws EntityCreationException {
 
         String username = userDTO.getUsername();
