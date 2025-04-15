@@ -2,15 +2,16 @@ package com.bankly.vendura.sale.model;
 
 import com.bankly.vendura.authentication.user.model.User;
 import com.bankly.vendura.inventory.product.model.Product;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
+import com.bankly.vendura.payment.model.Payment;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.w3c.dom.stylesheets.LinkStyle;
 
 @Data
 @NoArgsConstructor
@@ -22,7 +23,13 @@ public class Sale {
 
   private Date date;
   @DBRef private User cashier;
-  private Set<Position> positions;
+  private Set<Position> positions = new HashSet<>();
+
+  @DBRef private Set<Payment> payments = new HashSet<>();
+
+  public double getTotal() {
+    return this.positions.stream().mapToDouble(Position::getPositionTotal).sum();
+  }
 
   @Getter
   @Builder
@@ -53,6 +60,10 @@ public class Sale {
 
     public double getReducedPrice() {
       return product.getPrice() - discountEuro < 0 ? 0 : product.getPrice() - discountEuro;
+    }
+
+    public double getPositionTotal() {
+      return getReducedPrice() * quantity;
     }
 
     public int getDiscountPercentage() {

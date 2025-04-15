@@ -54,7 +54,7 @@ public class GiftCardService {
     giftCard = this.giftCardRepository.save(giftCard);
 
     if (giftCard.getType() == GiftCard.Type.GIFT_CARD) {
-      this.giftCardTransactionService.createBalanceTransaction(
+      this.giftCardTransactionService.createTransaction(
           giftCard, giftCardDTO.getInitialBalance(), null, user, "Gift card created");
     }
 
@@ -102,7 +102,7 @@ public class GiftCardService {
       return giftCard;
     }
     User user = this.userService.findByUsername(authentication.getName()).orElseThrow();
-    this.giftCardTransactionService.createBalanceTransaction(
+    this.giftCardTransactionService.createTransaction(
         giftCard, -remainingBalance, null, user, "Gift card deleted");
 
     return giftCard;

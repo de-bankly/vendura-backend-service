@@ -4,6 +4,7 @@ import com.bankly.vendura.inventory.brand.model.BrandDTO;
 import com.bankly.vendura.inventory.productcategory.model.ProductCategoryDTO;
 import com.bankly.vendura.inventory.supplier.model.SupplierDTO;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.lang.Nullable;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductDTO {

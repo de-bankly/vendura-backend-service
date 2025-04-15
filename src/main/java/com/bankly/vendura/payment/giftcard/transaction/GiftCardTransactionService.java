@@ -38,21 +38,25 @@ public class GiftCardTransactionService {
     return result == null ? 0 : result.getAmount();
   }
 
-  public void createBalanceTransaction(
+  public void createTransaction(
       GiftCard giftCard,
       double amount,
       GiftcardTransactable transactionCause,
       User issuer,
       String message) {
-    if (giftCard.getType() != GiftCard.Type.GIFT_CARD) {
-      throw new IllegalArgumentException("Only GIFT_CARD type is allowed for balance transactions");
+
+    if (giftCard.getType() == GiftCard.Type.GIFT_CARD && amount > 0) {
+      double currentBalance = this.calculateRemainingBalance(giftCard);
+      if (currentBalance + amount < 0) {
+        throw new IllegalArgumentException("Insufficient balance for this transaction");
+      }
     }
-    if (amount <= 0) {
-      throw new IllegalArgumentException("Amount must be greater than zero");
-    }
-    double currentBalance = this.calculateRemainingBalance(giftCard);
-    if (currentBalance + amount < 0) {
-      throw new IllegalArgumentException("Insufficient balance for this transaction");
+
+    if (giftCard.getType() == GiftCard.Type.DISCOUNT_CARD && amount > 0) {
+      double remainingUsages = this.calculateRemainingUsages(giftCard);
+      if (remainingUsages <= 0) {
+        throw new IllegalArgumentException("No remaining usages for this transaction");
+      }
     }
 
     GiftCardTransaction giftCardTransaction =
@@ -63,6 +67,11 @@ public class GiftCardTransactionService {
             .issuer(issuer)
             .message(message)
             .build();
+
+    if (giftCard.getType() == GiftCard.Type.DISCOUNT_CARD) {
+      giftCardTransaction.setUsage(amount > 0 ? 1 : -1);
+    }
+
     this.giftCardTransactionRepository.save(giftCardTransaction);
   }
 
@@ -70,9 +79,17 @@ public class GiftCardTransactionService {
     return this.calculateRemainingUsages(giftCard.getId());
   }
 
-  private Integer calculateRemainingUsages(String id) {
-    return null; // TODO
+  private Integer calculateRemainingUsages(String giftCardId) {
+    Aggregation aggregation =
+        Aggregation.newAggregation(
+            Aggregation.match(Criteria.where("giftCard").is(new DBRef("giftcards", giftCardId))),
+            Aggregation.group("giftCard._id").sum("usage").as("usage"));
+
+    GiftCardTransaction result =
+        this.mongoTemplate
+            .aggregate(aggregation, GiftCardTransaction.class, GiftCardTransaction.class)
+            .getUniqueMappedResult();
+
+    return result == null ? 0 : result.getUsage();
   }
-
-
 }
