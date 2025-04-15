@@ -1,10 +1,10 @@
 package com.bankly.vendura.payment.giftcard;
 
+import com.bankly.vendura.payment.giftcard.transaction.GiftCardTransactionService;
 import com.bankly.vendura.payment.giftcard.model.GiftCard;
 import com.bankly.vendura.payment.giftcard.model.GiftCardDTO;
 import com.bankly.vendura.payment.giftcard.model.GiftCardFactory;
 import com.bankly.vendura.payment.giftcard.model.GiftCardRepository;
-import com.bankly.vendura.payment.giftcard.transaction.GiftCardTransactionService;
 import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

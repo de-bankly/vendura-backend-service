@@ -32,6 +32,7 @@ public class Sale {
     @DBRef private Product product;
     private int quantity;
     private Set<Position> connectedPositions = new HashSet<>();
+    private double discountEuro;
 
     public void setQuantity(int quantity) {
       this.quantity = quantity;
@@ -49,5 +50,14 @@ public class Sale {
                       Position.builder().product(connectedProduct).quantity(this.quantity).build())
               .collect(Collectors.toSet());
     }
+
+    public double getReducedPrice() {
+      return product.getPrice() - discountEuro < 0 ? 0 : product.getPrice() - discountEuro;
+    }
+
+    public int getDiscountPercentage() {
+      return (int) ((discountEuro / product.getPrice()) * 100);
+    }
+
   }
 }
