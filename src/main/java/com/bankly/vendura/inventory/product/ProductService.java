@@ -161,4 +161,8 @@ public class ProductService {
 
     this.productRepository.delete(product);
   }
+
+  public Product getProductEntityById(String id) {
+    return this.productRepository.findById(id).orElse(null);
+  }
 }

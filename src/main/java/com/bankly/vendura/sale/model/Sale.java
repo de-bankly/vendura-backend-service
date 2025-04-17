@@ -1,17 +1,15 @@
 package com.bankly.vendura.sale.model;
 
 import com.bankly.vendura.authentication.user.model.User;
+import com.bankly.vendura.deposit.model.DepositReceipt;
 import com.bankly.vendura.inventory.product.model.Product;
-
+import com.bankly.vendura.payment.model.Payment;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import com.bankly.vendura.payment.model.Payment;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.w3c.dom.stylesheets.LinkStyle;
 
 @Data
 @NoArgsConstructor
@@ -26,20 +24,57 @@ public class Sale {
   private Set<Position> positions = new HashSet<>();
 
   @DBRef private Set<Payment> payments = new HashSet<>();
+  @DBRef private Set<DepositReceipt> depositReceipts = new HashSet<>();
 
-  public double getTotal() {
-    return this.positions.stream().mapToDouble(Position::getPositionTotal).sum();
+  public double calculateTotal() {
+    return this.positions.stream().mapToDouble(Position::getPositionTotal).sum()
+        - this.depositReceipts.stream().mapToDouble(DepositReceipt::calculateTotal).sum();
+  }
+
+  public static SaleBuilder builder() {
+    return new SaleBuilder();
+  }
+
+  public static class SaleBuilder {
+    private Sale sale = new Sale();
+    private SaleBuilder() {
+    }
+
+    public Sale build() {
+      return sale;
+    }
+
+    public SaleBuilder id(String id) {
+      this.sale.setId(id);
+      return this;
+    }
+
+    public SaleBuilder date(Date date) {
+      this.sale.setDate(date);
+      return this;
+    }
+
+    public SaleBuilder cashier(User cashier) {
+      this.sale.setCashier(cashier);
+      return this;
+    }
+
   }
 
   @Getter
-  @Builder
   @NoArgsConstructor
-  @AllArgsConstructor
   public static class Position {
     @DBRef private Product product;
     private int quantity;
     private Set<Position> connectedPositions = new HashSet<>();
+
     private double discountEuro;
+
+    public Position(Product product, int quantity, double discountEuro) {
+      this.setProduct(product);
+      this.setQuantity(quantity);
+      this.discountEuro = discountEuro;
+    }
 
     public void setQuantity(int quantity) {
       this.quantity = quantity;
@@ -53,8 +88,12 @@ public class Sale {
       this.connectedPositions =
           product.getConnectedProducts().stream()
               .map(
-                  connectedProduct ->
-                      Position.builder().product(connectedProduct).quantity(this.quantity).build())
+                  connectedProduct -> {
+                    Position connectedPosition = new Position();
+                    connectedPosition.setProduct(connectedProduct);
+                    connectedPosition.setQuantity(quantity);
+                    return connectedPosition;
+                  })
               .collect(Collectors.toSet());
     }
 
@@ -69,6 +108,5 @@ public class Sale {
     public int getDiscountPercentage() {
       return (int) ((discountEuro / product.getPrice()) * 100);
     }
-
   }
 }

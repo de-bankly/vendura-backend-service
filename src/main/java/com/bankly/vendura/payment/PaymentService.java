@@ -44,7 +44,7 @@ public class PaymentService {
 
   public boolean handlePaymentsOnSale(Sale sale) {
     List<Payment> sortedPayments = sale.getPayments().stream().sorted(Comparator.comparingInt(Payment::getPaymentHierarchy)).collect(Collectors.toList());
-    double remainingAmount = sale.getTotal();
+    double remainingAmount = sale.calculateTotal();
     System.out.println("remainingAmount: " + remainingAmount);
     for (Payment payment : sortedPayments) {
       if (remainingAmount <= 0) {
@@ -78,8 +78,11 @@ public class PaymentService {
       }
 
       remainingAmount -= payment.getAmount();
+      payment.setStatus(Payment.Status.COMPLETED);
+      this.paymentRepository.save(payment);
     }
 
+    System.out.println("Remaining at the end of all payments: " + remainingAmount);
     if (remainingAmount != 0) {
       revertAllTransactionsAndCancelSale(sale);
       return false;

@@ -49,7 +49,7 @@ public class PaymentFactory {
     payment.setTimestamp(paymentDTO.getTimestamp());
     payment.setAmount(paymentDTO.getAmount());
     payment.setIssuer(userRepository.findById(paymentDTO.getIssuerId()).orElse(null));
-    payment.setStatus(paymentDTO.getStatus().toEntityStatus());
+    payment.setStatus(paymentDTO.getStatus() == null ? Payment.Status.PENDING : paymentDTO.getStatus().toEntityStatus());
 
     if (payment instanceof CardPayment) {
       CardPayment cardPayment = (CardPayment) payment;

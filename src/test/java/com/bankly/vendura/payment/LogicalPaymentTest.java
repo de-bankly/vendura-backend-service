@@ -40,7 +40,7 @@ public class LogicalPaymentTest {
                 .build());
 
     this.testSale = new Sale();
-    this.testSale.getPositions().add(new Sale.Position(testProduct, 2, null, 0));
+    this.testSale.getPositions().add(new Sale.Position(testProduct, 2, 0));
   }
 
   @AfterAll
