@@ -146,7 +146,9 @@ public class GiftCardService {
     }
 
     if (giftCard.getType() == GiftCard.Type.DISCOUNT_CARD) {
-        giftCardDTO.setMaximumUsages(this.giftCardTransactionService.calculateRemainingUsages(giftCard));
+      Integer i = giftCard.getMaximumUsages() - this.giftCardTransactionService.calculateUsages(giftCard);
+      System.out.println(i + " usages left");
+        giftCardDTO.setRemainingUsages(i);
     }
 
     return giftCardDTO;

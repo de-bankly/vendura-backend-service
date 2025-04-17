@@ -53,7 +53,7 @@ public class GiftCardTransactionService {
     }
 
     if (giftCard.getType() == GiftCard.Type.DISCOUNT_CARD && amount > 0) {
-      double remainingUsages = this.calculateRemainingUsages(giftCard);
+      double remainingUsages = giftCard.getMaximumUsages() - this.calculateUsages(giftCard);
       if (remainingUsages <= 0) {
         throw new IllegalArgumentException("No remaining usages for this transaction");
       }
@@ -75,11 +75,11 @@ public class GiftCardTransactionService {
     this.giftCardTransactionRepository.save(giftCardTransaction);
   }
 
-  public Integer calculateRemainingUsages(GiftCard giftCard) {
-    return this.calculateRemainingUsages(giftCard.getId());
+  public Integer calculateUsages(GiftCard giftCard) {
+    return this.calculateUsages(giftCard.getId());
   }
 
-  private Integer calculateRemainingUsages(String giftCardId) {
+  private Integer calculateUsages(String giftCardId) {
     Aggregation aggregation =
         Aggregation.newAggregation(
             Aggregation.match(Criteria.where("giftCard").is(new DBRef("giftcards", giftCardId))),
