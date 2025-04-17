@@ -1,5 +1,6 @@
 package com.bankly.vendura.payment;
 
+import com.bankly.vendura.payment.giftcard.model.GiftCard;
 import com.bankly.vendura.payment.giftcard.transaction.GiftCardTransactionService;
 import com.bankly.vendura.payment.model.*;
 import com.bankly.vendura.sale.model.Sale;
@@ -22,7 +23,14 @@ public class PaymentService {
     return this.paymentRepository.save(payment);
   }
 
-  public boolean processGiftCardPayment(GiftCardPayment payment, Sale sale) {
+  public boolean processGiftCardPayment(GiftCardPayment payment, Sale sale, double remainingBalance) {
+
+    if (payment.getGiftCard().getType() == GiftCard.Type.DISCOUNT_CARD) {
+      // round the following to two decimals
+        double amount = (double) Math.round(remainingBalance * payment.getGiftCard().getDiscountPercentage()) / 100;
+      payment.setAmount(amount);
+    }
+
     try {
       this.giftCardTransactionService.createTransaction(
           payment.getGiftCard(),

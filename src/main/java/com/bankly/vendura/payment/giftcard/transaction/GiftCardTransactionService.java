@@ -69,7 +69,7 @@ public class GiftCardTransactionService {
             .build();
 
     if (giftCard.getType() == GiftCard.Type.DISCOUNT_CARD) {
-      giftCardTransaction.setUsage(amount > 0 ? 1 : -1);
+      giftCardTransaction.setUsage(amount > 0 ? -1 : 1);
     }
 
     this.giftCardTransactionRepository.save(giftCardTransaction);

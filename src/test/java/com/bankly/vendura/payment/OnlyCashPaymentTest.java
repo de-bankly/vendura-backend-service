@@ -1,5 +1,6 @@
 package com.bankly.vendura.payment;
 
+import com.bankly.vendura.MongoTestingRepository;
 import com.bankly.vendura.inventory.product.ProductService;
 import com.bankly.vendura.inventory.product.model.Product;
 import com.bankly.vendura.inventory.product.model.ProductDTO;
@@ -16,11 +17,13 @@ import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
+@ActiveProfiles("test")
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-public class OnlyCashPaymentTest {
+public class OnlyCashPaymentTest extends MongoTestingRepository {
 
   private final ProductService productService;
   private final PaymentRepository paymentRepository;
