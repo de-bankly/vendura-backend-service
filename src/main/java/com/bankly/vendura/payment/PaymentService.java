@@ -26,7 +26,7 @@ public class PaymentService {
     try {
       this.giftCardTransactionService.createTransaction(
           payment.getGiftCard(),
-          payment.getAmount(),
+          -payment.getAmount(),
           payment,
           payment.getIssuer(),
           "Automatic charge on giftcard due to payment TX#"
