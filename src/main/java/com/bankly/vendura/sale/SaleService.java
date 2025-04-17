@@ -1,6 +1,7 @@
 package com.bankly.vendura.sale;
 
 import com.bankly.vendura.authentication.user.model.User;
+import com.bankly.vendura.inventory.promotion.PromotionService;
 import com.bankly.vendura.payment.PaymentService;
 import com.bankly.vendura.sale.model.Sale;
 import com.bankly.vendura.sale.model.SaleDTO;
@@ -21,9 +22,13 @@ public class SaleService {
   private final DynamicSaleFactory dynamicSaleFactory;
   private final PaymentService paymentService;
   private final SaleRepository saleRepository;
+  private final PromotionService promotionService;
 
   public void applyDiscountsToSale(Sale sale) {
     LOGGER.info("Applying discounts to sale with ID: {}", sale.getId());
+    for (Sale.Position position : sale.getPositions()) {
+      this.promotionService.applyPromotion(position);
+    }
   }
 
   public Object submitSaleToProcess(SaleDTO saleDTO) {

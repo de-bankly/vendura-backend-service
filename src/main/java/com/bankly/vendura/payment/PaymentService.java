@@ -28,7 +28,7 @@ public class PaymentService {
     if (payment.getGiftCard().getType() == GiftCard.Type.DISCOUNT_CARD) {
       // round the following to two decimals
         double amount = (double) Math.round(remainingBalance * payment.getGiftCard().getDiscountPercentage()) / 100;
-      payment.setAmount(amount);
+      payment.setAmount(Math.min(amount, remainingBalance));
     }
 
     try {
@@ -60,6 +60,9 @@ public class PaymentService {
         sale.getPayments().remove(payment);
         this.paymentRepository.delete(payment);
       }
+      if (payment.getAmount() > remainingAmount) {
+        payment.setAmount(remainingAmount);
+      }
 
       boolean transactionSuccess = false;
 
@@ -72,7 +75,7 @@ public class PaymentService {
       }
 
       if (payment instanceof GiftCardPayment) {
-        transactionSuccess = this.processGiftCardPayment((GiftCardPayment) payment, sale);
+        transactionSuccess = this.processGiftCardPayment((GiftCardPayment) payment, sale, remainingAmount);
       }
 
       if (payment instanceof CashPayment) {
@@ -135,7 +138,7 @@ public class PaymentService {
       GiftCardPayment giftCardPayment = (GiftCardPayment) payment;
       this.giftCardTransactionService.createTransaction(
           giftCardPayment.getGiftCard(),
-          -payment.getAmount(),
+          payment.getAmount(),
           giftCardPayment,
           payment.getIssuer(),
           "Revert transaction on giftcard due to a fail of fulfilling payment TX#"
@@ -144,4 +147,5 @@ public class PaymentService {
 
     this.paymentRepository.save(payment);
   }
+
 }

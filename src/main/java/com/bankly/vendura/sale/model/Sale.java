@@ -68,6 +68,7 @@ public class Sale {
     private int quantity;
     private Set<Position> connectedPositions = new HashSet<>();
 
+    @Setter
     private double discountEuro;
 
     public Position(Product product, int quantity, double discountEuro) {
@@ -108,5 +109,6 @@ public class Sale {
     public int getDiscountPercentage() {
       return (int) ((discountEuro / product.getPrice()) * 100);
     }
+
   }
 }

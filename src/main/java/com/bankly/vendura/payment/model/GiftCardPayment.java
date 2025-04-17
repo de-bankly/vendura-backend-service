@@ -21,7 +21,7 @@ public class GiftCardPayment extends Payment implements GiftcardTransactable {
 
     @Override
     public int getPaymentHierarchy() {
-        return 0;
+        return 100;
     }
 
     public GiftCardPayment(Date timestamp, double amount, User issuer, Status status, GiftCard giftCard) {

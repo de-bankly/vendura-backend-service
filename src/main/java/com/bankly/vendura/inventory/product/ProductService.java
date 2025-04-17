@@ -10,15 +10,14 @@ import com.bankly.vendura.inventory.supplier.model.SupplierFactory;
 import com.bankly.vendura.inventory.transactions.product.ProductTransactionService;
 import com.bankly.vendura.utilities.exceptions.EntityCreationException;
 import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import java.util.UUID;
-
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -29,17 +28,23 @@ public class ProductService {
 
   /**
    * Get all products with optional stock calculation
+   *
    * @param pageable Pagination parameters
    * @param calculateStock Whether to calculate current stock for each product
    * @return Page of product DTOs
    */
   public Page<ProductDTO> getProducts(Pageable pageable, boolean calculateStock) {
-    Page<ProductDTO> productDTOPage = this.productRepository.findAll(pageable).map(ProductFactory::toDTO);
+    Page<ProductDTO> productDTOPage =
+        this.productRepository.findAll(pageable).map(ProductFactory::toDTO);
 
     if (calculateStock) {
-      productDTOPage.getContent().forEach(productDTO -> {
-        productDTO.setCurrentStock(productTransactionService.calculateCurrentStock(productDTO.getId()));
-      });
+      productDTOPage
+          .getContent()
+          .forEach(
+              productDTO -> {
+                productDTO.setCurrentStock(
+                    productTransactionService.calculateCurrentStock(productDTO.getId()));
+              });
     }
 
     return productDTOPage;
@@ -47,16 +52,20 @@ public class ProductService {
 
   /**
    * Get a single product by ID with optional stock calculation
+   *
    * @param id Product ID
    * @param calculateStock Whether to calculate current stock for the product
    * @return Product DTO
    */
   public ProductDTO getProductById(String id, boolean calculateStock) {
-    ProductDTO productDTO = ProductFactory.toDTO(
-        this.productRepository
-            .findById(id)
-            .orElseThrow(
-                () -> new EntityRetrieveException("Product not found", HttpStatus.NOT_FOUND, id)));
+    ProductDTO productDTO =
+        ProductFactory.toDTO(
+            this.productRepository
+                .findById(id)
+                .orElseThrow(
+                    () ->
+                        new EntityRetrieveException(
+                            "Product not found", HttpStatus.NOT_FOUND, id)));
 
     if (calculateStock) {
       productDTO.setCurrentStock(productTransactionService.calculateCurrentStock(id));
@@ -69,7 +78,10 @@ public class ProductService {
 
     if (this.productRepository.findByName(productDTO.getName()).isPresent()) {
       throw new EntityCreationException(
-              "Product with that name already exists", HttpStatus.CONFLICT, productDTO.getName(), false);
+          "Product with that name already exists",
+          HttpStatus.CONFLICT,
+          productDTO.getName(),
+          false);
     }
 
     Product product = ProductFactory.toEntity(productDTO);
@@ -84,6 +96,7 @@ public class ProductService {
 
   /**
    * Generates a unique product ID that doesn't already exist in the database
+   *
    * @return A unique formatted product ID
    */
   private String generateUniqueProductId() {
@@ -107,7 +120,10 @@ public class ProductService {
     if (productDTO.getId() != null) {
       if (this.productRepository.findById(productDTO.getId()).isPresent()) {
         throw new EntityCreationException(
-                "Product with that ID already exists", HttpStatus.CONFLICT, productDTO.getName(), false);
+            "Product with that ID already exists",
+            HttpStatus.CONFLICT,
+            productDTO.getName(),
+            false);
       }
       product.setId(productDTO.getId());
     }
@@ -115,7 +131,10 @@ public class ProductService {
     if (productDTO.getName() != null) {
       if (this.productRepository.findByName(productDTO.getName()).isPresent()) {
         throw new EntityCreationException(
-                "Product with that name already exists", HttpStatus.CONFLICT, productDTO.getName(), false);
+            "Product with that name already exists",
+            HttpStatus.CONFLICT,
+            productDTO.getName(),
+            false);
       }
 
       product.setName(productDTO.getName());
@@ -164,5 +183,13 @@ public class ProductService {
 
   public Product getProductEntityById(String id) {
     return this.productRepository.findById(id).orElse(null);
+  }
+
+  public Product findById(String productId) {
+    if (productId == null) {
+      return null;
+    }
+
+    return this.productRepository.findById(productId).orElse(null);
   }
 }
