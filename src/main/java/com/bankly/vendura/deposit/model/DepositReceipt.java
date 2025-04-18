@@ -21,6 +21,8 @@ public class DepositReceipt {
 
   private Set<Position> positions = new HashSet<>();
 
+  private boolean redeemed;
+
   public double calculateTotal() {
     return this.positions.stream().mapToDouble(Position::getPositionTotal).sum();
   }

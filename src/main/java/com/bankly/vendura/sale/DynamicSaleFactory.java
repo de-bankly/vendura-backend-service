@@ -3,6 +3,7 @@ package com.bankly.vendura.sale;
 import com.bankly.vendura.authentication.user.model.User;
 import com.bankly.vendura.authentication.user.model.UserRepository;
 import com.bankly.vendura.deposit.model.DepositReceipt;
+import com.bankly.vendura.deposit.model.DepositReceiptDTO;
 import com.bankly.vendura.deposit.model.DepositReceiptFactory;
 import com.bankly.vendura.deposit.model.DepositReceiptRepository;
 import com.bankly.vendura.inventory.product.ProductService;
@@ -16,6 +17,7 @@ import com.bankly.vendura.payment.model.PaymentFactory;
 import com.bankly.vendura.sale.model.Sale;
 import com.bankly.vendura.sale.model.SaleDTO;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
@@ -94,11 +96,8 @@ public class DynamicSaleFactory {
     }
 
     if (!saleDTO.getDepositReceipts().isEmpty()) {
-      Set<DepositReceipt> depositReceipts =
-          saleDTO.getDepositReceipts().stream()
-              .map(DepositReceiptFactory::toEntity)
-              .collect(Collectors.toSet());
-      this.depositReceiptRepository.saveAll(depositReceipts);
+      List<DepositReceipt> depositReceipts =
+              this.depositReceiptRepository.findAllById(saleDTO.getDepositReceipts().stream().map(DepositReceiptDTO::getId).collect(Collectors.toSet()));
       sale.getDepositReceipts().addAll(depositReceipts);
     }
 

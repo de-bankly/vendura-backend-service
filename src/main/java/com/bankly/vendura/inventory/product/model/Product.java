@@ -52,6 +52,14 @@ public class Product {
 
   private List<PriceHistory> priceHistories;
 
+  public Set<Product> getConnectedProductsIndefinite() {
+    Set<Product> connectedProductsIndefinite = new HashSet<>(this.connectedProducts);
+    for (Product connectedProduct : this.connectedProducts) {
+      connectedProductsIndefinite.addAll(connectedProduct.getConnectedProductsIndefinite());
+    }
+    return connectedProductsIndefinite;
+  }
+
   /**
    * Gets the current price from the latest price history entry
    * @return the current price or 0 if no price history exists
