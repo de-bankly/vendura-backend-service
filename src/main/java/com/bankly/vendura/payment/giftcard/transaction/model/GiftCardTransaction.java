@@ -21,6 +21,7 @@ public class GiftCardTransaction {
 
   @DBRef GiftCard giftCard;
   private double amount;
+  private int usage;
   @DBRef private GiftcardTransactable transactionCause;
   @DBRef private User issuer;
   private String message;
