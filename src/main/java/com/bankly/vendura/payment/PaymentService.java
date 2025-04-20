@@ -7,8 +7,9 @@ import com.bankly.vendura.sale.model.Sale;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,22 +17,54 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class PaymentService {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(PaymentService.class);
+
   private final GiftCardTransactionService giftCardTransactionService;
   private final PaymentRepository paymentRepository;
 
-  public Payment createPayment(Payment payment) {
-    return this.paymentRepository.save(payment);
+  /**
+   * Save a payment to the database
+   *
+   * @param payment to be saved
+   */
+  public void createPayment(Payment payment) {
+    this.paymentRepository.save(payment);
   }
 
-  public boolean processGiftCardPayment(GiftCardPayment payment, Sale sale, double remainingBalance) {
+  /**
+   * Process a payment with a gift card and convert discount cards to fixed amount if needed
+   *
+   * @param payment to be processed
+   * @param sale to be transacted on
+   * @param remainingBalance as a result of previous payment processing regarding the same sale
+   * @return whether the transaction was successful or not
+   */
+  public void processGiftCardPayment(GiftCardPayment payment, Sale sale, double remainingBalance) {
+    LOGGER.debug(
+        "Processing gift card payment {} with gift card {} for sale {}, remaining balance is {} €",
+        payment.getId(),
+        sale.getId(),
+        payment.getGiftCard().getId(),
+        remainingBalance);
 
     if (payment.getGiftCard().getType() == GiftCard.Type.DISCOUNT_CARD) {
       // round the following to two decimals
-        double amount = (double) Math.round(remainingBalance * payment.getGiftCard().getDiscountPercentage()) / 100;
-      payment.setAmount(Math.min(amount, remainingBalance));
+      double amount =
+          Math.min(
+              (double) Math.round(remainingBalance * payment.getGiftCard().getDiscountPercentage())
+                  / 100,
+              remainingBalance);
+      payment.setAmount(amount);
+      LOGGER.debug(
+          "Converted discount card to fixed amount not greater than remaining balance: {}",
+          payment.getAmount());
     }
 
     try {
+      LOGGER.debug(
+          "Creating transaction on gift card {} for payment {}",
+          payment.getGiftCard().getId(),
+          payment.getId());
       this.giftCardTransactionService.createTransaction(
           payment.getGiftCard(),
           -payment.getAmount(),
@@ -42,16 +75,23 @@ public class PaymentService {
               + " on SALE#"
               + sale.getId());
     } catch (IllegalArgumentException e) {
-      return false;
+      LOGGER.debug(
+          "Transaction on gift card {} failed for payment {}",
+          payment.getGiftCard().getId(),
+          payment.getId());
+      throw e;
     }
 
     payment.setStatus(Payment.Status.COMPLETED);
     this.paymentRepository.save(payment);
-    return true;
   }
 
   public boolean handlePaymentsOnSale(Sale sale) {
-    List<Payment> sortedPayments = sale.getPayments().stream().sorted(Comparator.comparingInt(Payment::getPaymentHierarchy)).collect(Collectors.toList());
+    StringBuilder errorBuilder = new StringBuilder();
+    List<Payment> sortedPayments =
+        sale.getPayments().stream()
+            .sorted(Comparator.comparingInt(Payment::getPaymentHierarchy))
+            .collect(Collectors.toList());
     double remainingAmount = sale.calculateTotal();
     System.out.println("remainingAmount: " + remainingAmount);
     for (Payment payment : sortedPayments) {
@@ -75,12 +115,29 @@ public class PaymentService {
       }
 
       if (payment instanceof GiftCardPayment) {
-        transactionSuccess = this.processGiftCardPayment((GiftCardPayment) payment, sale, remainingAmount);
+        try {
+          this.processGiftCardPayment((GiftCardPayment) payment, sale, remainingAmount);
+          transactionSuccess = true;
+        } catch (IllegalArgumentException e) {
+          errorBuilder
+              .append("Payment ")
+              .append(payment.getId())
+              .append(" with giftcard")
+              .append(((GiftCardPayment) payment).getGiftCard().getId())
+              .append(" failed: ")
+              .append(e.getMessage())
+              .append("; ");
+        }
       }
 
       if (payment instanceof CashPayment) {
-        transactionSuccess = this.processCashPayment((CashPayment) payment);
-        System.out.println(transactionSuccess + " succeeded");
+        try {
+          this.processCashPayment((CashPayment) payment);
+          transactionSuccess = true;
+        } catch (IllegalArgumentException e) {
+          errorBuilder.append(
+              "Payment " + payment.getId() + " with cash failed: " + e.getMessage() + "; ");
+        }
       }
 
       if (!transactionSuccess) {
@@ -96,7 +153,11 @@ public class PaymentService {
     System.out.println("Remaining at the end of all payments: " + remainingAmount);
     if (remainingAmount != 0) {
       revertAllTransactionsAndCancelSale(sale);
-      return false;
+      throw new IllegalArgumentException(
+          "Payment processing failed: remaining amount is not zero: "
+              + remainingAmount
+              + " €; "
+              + errorBuilder);
     }
 
     return true;
@@ -147,5 +208,4 @@ public class PaymentService {
 
     this.paymentRepository.save(payment);
   }
-
 }

@@ -48,14 +48,16 @@ public class GiftCardTransactionService {
     if (giftCard.getType() == GiftCard.Type.GIFT_CARD && amount > 0) {
       double currentBalance = this.calculateRemainingBalance(giftCard);
       if (currentBalance + amount < 0) {
-        throw new IllegalArgumentException("Insufficient balance for this transaction");
+        throw new IllegalArgumentException(
+            "Insufficient balance for this transaction, current balance is " + currentBalance);
       }
     }
 
     if (giftCard.getType() == GiftCard.Type.DISCOUNT_CARD && amount > 0) {
       double remainingUsages = giftCard.getMaximumUsages() - this.calculateUsages(giftCard);
       if (remainingUsages <= 0) {
-        throw new IllegalArgumentException("No remaining usages for this transaction");
+        throw new IllegalArgumentException(
+            "No remaining usages for this transaction, remaining usages are " + remainingUsages);
       }
     }
 
