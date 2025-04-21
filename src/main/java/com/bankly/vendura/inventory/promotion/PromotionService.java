@@ -61,6 +61,8 @@ public class PromotionService {
       existingPromotion.setDiscount(promotionDTO.getDiscount());
     }
 
+    this.promotionRepository.save(existingPromotion);
+
     return existingPromotion;
   }
 
