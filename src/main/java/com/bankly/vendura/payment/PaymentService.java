@@ -90,8 +90,8 @@ public class PaymentService {
     StringBuilder errorBuilder = new StringBuilder();
     List<Payment> sortedPayments =
         sale.getPayments().stream()
-            .sorted(Comparator.comparingInt(Payment::getPaymentHierarchy))
-            .collect(Collectors.toList());
+            .sorted(Comparator.comparingInt(Payment::getPaymentHierarchy).reversed())
+            .toList();
     double remainingAmount = sale.calculateTotal();
     System.out.println("remainingAmount: " + remainingAmount);
     for (Payment payment : sortedPayments) {
@@ -140,14 +140,16 @@ public class PaymentService {
         }
       }
 
-      if (!transactionSuccess) {
-        revertAllTransactionsAndCancelSale(sale);
-        return false;
-      }
+      //if (!transactionSuccess) {
+        //revertAllTransactionsAndCancelSale(sale);
+        //return false;
+      //}
 
-      remainingAmount -= payment.getAmount();
-      payment.setStatus(Payment.Status.COMPLETED);
-      this.paymentRepository.save(payment);
+      if (transactionSuccess) {
+        remainingAmount -= payment.getAmount();
+        payment.setStatus(Payment.Status.COMPLETED);
+        this.paymentRepository.save(payment);
+      }
     }
 
     System.out.println("Remaining at the end of all payments: " + remainingAmount);
