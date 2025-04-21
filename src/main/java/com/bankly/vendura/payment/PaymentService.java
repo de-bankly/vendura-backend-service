@@ -163,19 +163,22 @@ public class PaymentService {
     return true;
   }
 
-  private boolean processCashPayment(CashPayment payment) {
+  private void processCashPayment(CashPayment payment) {
     if (payment.getHanded() < payment.getAmount()) {
       payment.setStatus(Payment.Status.FAILED);
       payment.setReturned(payment.getHanded());
       this.paymentRepository.save(payment);
-      return false;
+      throw new IllegalArgumentException(
+          "Payment with cash failed: handed amount is not enough: "
+              + payment.getHanded()
+              + " €; expected at least "
+              + payment.getAmount()
+              + " €");
     }
 
     payment.setReturned(payment.getHanded() - payment.getAmount());
     payment.setStatus(Payment.Status.COMPLETED);
     this.paymentRepository.save(payment);
-
-    return true;
   }
 
   private boolean processCardPayment(CardPayment payment) {
