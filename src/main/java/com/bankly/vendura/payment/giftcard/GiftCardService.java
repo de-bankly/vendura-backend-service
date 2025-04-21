@@ -55,7 +55,7 @@ public class GiftCardService {
 
     if (giftCard.getType() == GiftCard.Type.GIFT_CARD) {
       this.giftCardTransactionService.createTransaction(
-          giftCard, giftCardDTO.getInitialBalance(), null, user, "Gift card created");
+          giftCard, giftCardDTO.getInitialBalance(), null, user, "Gift card created", null);
     }
 
     return giftCard;
@@ -97,13 +97,26 @@ public class GiftCardService {
 
   public GiftCard delete(String id, Authentication authentication) {
     GiftCard giftCard = this.giftCardRepository.findById(id).orElseThrow();
-    double remainingBalance = this.giftCardTransactionService.calculateRemainingBalance(giftCard);
-    if (remainingBalance == 0) {
-      return giftCard;
+
+    if (giftCard.getType() == GiftCard.Type.GIFT_CARD) {
+      double remainingBalance = this.giftCardTransactionService.calculateRemainingBalance(giftCard);
+      if (remainingBalance == 0) {
+        return giftCard;
+      }
+      User user = this.userService.findByUsername(authentication.getName()).orElseThrow();
+      this.giftCardTransactionService.createTransaction(
+              giftCard, -remainingBalance, null, user, "Gift card deleted", null);
     }
-    User user = this.userService.findByUsername(authentication.getName()).orElseThrow();
-    this.giftCardTransactionService.createTransaction(
-        giftCard, -remainingBalance, null, user, "Gift card deleted");
+
+    if (giftCard.getType() == GiftCard.Type.DISCOUNT_CARD) {
+      int remainingUsages = giftCard.getMaximumUsages() - this.giftCardTransactionService.calculateUsages(giftCard);
+      if (remainingUsages == 0) {
+        return giftCard;
+      }
+      User user = this.userService.findByUsername(authentication.getName()).orElseThrow();
+      this.giftCardTransactionService.createTransaction(
+              giftCard, -remainingUsages, null, user, "Gift card deleted", -remainingUsages);
+    }
 
     return giftCard;
   }

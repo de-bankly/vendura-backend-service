@@ -73,7 +73,7 @@ public class PaymentService {
           "Automatic charge on giftcard due to payment TX#"
               + payment.getId()
               + " on SALE#"
-              + sale.getId());
+              + sale.getId(), null);
     } catch (IllegalArgumentException e) {
       LOGGER.debug(
           "Transaction on gift card {} failed for payment {}",
@@ -208,7 +208,7 @@ public class PaymentService {
           giftCardPayment,
           payment.getIssuer(),
           "Revert transaction on giftcard due to a fail of fulfilling payment TX#"
-              + payment.getId());
+              + payment.getId(), null);
     }
 
     this.paymentRepository.save(payment);
