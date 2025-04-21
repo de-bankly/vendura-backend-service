@@ -5,6 +5,7 @@ import com.bankly.vendura.payment.giftcard.transaction.GiftCardTransactionServic
 import com.bankly.vendura.payment.model.*;
 import com.bankly.vendura.sale.model.Sale;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-public class PaymentService {
+public class  PaymentService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PaymentService.class);
 
@@ -46,8 +47,10 @@ public class PaymentService {
         sale.getId(),
         payment.getGiftCard().getId(),
         remainingBalance);
-
-    if (payment.getGiftCard().getType() == GiftCard.Type.DISCOUNT_CARD) {
+      if (payment.getGiftCard().getExpirationDate().before(new Date())) {
+        throw new IllegalArgumentException("Giftcard is expired!");
+      }
+      if (payment.getGiftCard().getType() == GiftCard.Type.DISCOUNT_CARD) {
       // round the following to two decimals
       double amount =
           Math.min(

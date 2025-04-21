@@ -64,7 +64,8 @@ public class GiftCardService {
   private String generateGiftCardId() {
     String id;
     do {
-      id = String.format("%016d", new java.util.Random().nextLong() & Long.MAX_VALUE);
+      long randomValue = Math.abs(new java.util.Random().nextLong()) % 10000000000000000L;
+      id = String.format("%016d", randomValue);
     } while (giftCardRepository.existsById(id));
     return id;
   }
