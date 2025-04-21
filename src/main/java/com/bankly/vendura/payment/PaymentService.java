@@ -73,7 +73,7 @@ public class PaymentService {
           "Automatic charge on giftcard due to payment TX#"
               + payment.getId()
               + " on SALE#"
-              + sale.getId());
+              + sale.getId(), null);
     } catch (IllegalArgumentException e) {
       LOGGER.debug(
           "Transaction on gift card {} failed for payment {}",
@@ -90,8 +90,9 @@ public class PaymentService {
     StringBuilder errorBuilder = new StringBuilder();
     List<Payment> sortedPayments =
         sale.getPayments().stream()
-            .sorted(Comparator.comparingInt(Payment::getPaymentHierarchy))
-            .collect(Collectors.toList());
+            .sorted(Comparator.comparingInt(Payment::getPaymentHierarchy).reversed())
+            .toList();
+
     double remainingAmount = sale.calculateTotal();
     System.out.println("remainingAmount: " + remainingAmount);
     for (Payment payment : sortedPayments) {
@@ -140,14 +141,13 @@ public class PaymentService {
         }
       }
 
-      if (!transactionSuccess) {
-        revertAllTransactionsAndCancelSale(sale);
-        return false;
+
+      if (transactionSuccess) {
+        remainingAmount -= payment.getAmount();
+        payment.setStatus(Payment.Status.COMPLETED);
+        this.paymentRepository.save(payment);
       }
 
-      remainingAmount -= payment.getAmount();
-      payment.setStatus(Payment.Status.COMPLETED);
-      this.paymentRepository.save(payment);
     }
 
     System.out.println("Remaining at the end of all payments: " + remainingAmount);
@@ -163,19 +163,24 @@ public class PaymentService {
     return true;
   }
 
-  private boolean processCashPayment(CashPayment payment) {
+  private void processCashPayment(CashPayment payment) {
+
     if (payment.getHanded() < payment.getAmount()) {
       payment.setStatus(Payment.Status.FAILED);
       payment.setReturned(payment.getHanded());
       this.paymentRepository.save(payment);
-      return false;
+      throw new IllegalArgumentException(
+          "Payment with cash failed: handed amount is not enough: "
+              + payment.getHanded()
+              + " €; expected at least "
+              + payment.getAmount()
+              + " €");
+
     }
 
     payment.setReturned(payment.getHanded() - payment.getAmount());
     payment.setStatus(Payment.Status.COMPLETED);
     this.paymentRepository.save(payment);
-
-    return true;
   }
 
   private boolean processCardPayment(CardPayment payment) {
@@ -203,7 +208,8 @@ public class PaymentService {
           giftCardPayment,
           payment.getIssuer(),
           "Revert transaction on giftcard due to a fail of fulfilling payment TX#"
-              + payment.getId());
+              + payment.getId(), null);
+
     }
 
     this.paymentRepository.save(payment);
