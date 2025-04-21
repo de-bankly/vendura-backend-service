@@ -132,5 +132,12 @@ public class Sale implements ProductTransactable {
       return (int) ((discountEuro / product.getPrice()) * 100);
     }
 
+    public long getTotalQuantity() {
+      long myQuantity = this.quantity;
+        for (Position connectedPosition : this.connectedPositions) {
+            myQuantity += connectedPosition.getTotalQuantity();
+        }
+        return myQuantity;
+    }
   }
 }
