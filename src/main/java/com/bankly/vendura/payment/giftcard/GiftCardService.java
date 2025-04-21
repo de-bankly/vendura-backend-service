@@ -116,7 +116,7 @@ public class GiftCardService {
       }
       User user = this.userService.findByUsername(authentication.getName()).orElseThrow();
       this.giftCardTransactionService.createTransaction(
-              giftCard, -remainingUsages, null, user, "Gift card deleted", -remainingUsages);
+              giftCard, -remainingUsages, null, user, "Gift card deleted", remainingUsages);
     }
 
     return giftCard;
