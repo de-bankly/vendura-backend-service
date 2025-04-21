@@ -61,7 +61,7 @@ public class PromotionService {
       existingPromotion.setDiscount(promotionDTO.getDiscount());
     }
 
-    return null;
+    return existingPromotion;
   }
 
   public void deletePromotion(String id) {
