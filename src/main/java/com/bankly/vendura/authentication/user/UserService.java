@@ -113,6 +113,10 @@ public class UserService {
       user.setUsername(userDTO.getUsername());
     }
 
+    if (userDTO.getPassword() != null) {
+        user.setPassword(this.passwordEncoder.encode(userDTO.getPassword()));
+    }
+
     if (userDTO.getLocked() != null && user.isLocked() != userDTO.getLocked()) {
       user.setLocked(userDTO.getLocked());
     }
