@@ -30,12 +30,14 @@ public class PaymentFactory {
       CashPayment cashPayment = (CashPayment) payment;
 
       builder.handed(cashPayment.getHanded()).returned(cashPayment.getReturned()).type(PaymentDTO.Type.CASH);
+
     }
 
     if (payment instanceof GiftCardPayment) {
       GiftCardPayment giftCardPayment = (GiftCardPayment) payment;
 
       builder.giftcardId(giftCardPayment.getGiftCard().getId()).type(PaymentDTO.Type.GIFTCARD);
+
     }
 
     return builder.build();

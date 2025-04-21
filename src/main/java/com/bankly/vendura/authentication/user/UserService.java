@@ -2,7 +2,6 @@ package com.bankly.vendura.authentication.user;
 
 import com.bankly.vendura.authentication.controller.models.Login;
 import com.bankly.vendura.authentication.roles.model.Role;
-import com.bankly.vendura.authentication.roles.model.RoleDTO;
 import com.bankly.vendura.authentication.roles.model.RoleRepository;
 import com.bankly.vendura.authentication.security.JWTService;
 import com.bankly.vendura.authentication.user.model.User;
@@ -44,14 +43,20 @@ public class UserService {
 
     this.userRepository
         .findUserByUsername(username)
-        .orElseThrow(
-            () ->
-                new EntityCreationException(
-                    "Username " + username + " already exists", HttpStatus.CONFLICT, "User", true));
+        .ifPresent(
+            (user) -> {
+              throw new EntityCreationException(
+                  "Username " + username + " already exists", HttpStatus.CONFLICT, "User", true);
+            });
 
     User user = new User();
     user.setUsername(username);
     user.setPassword(this.passwordEncoder.encode(passwordPlain));
+
+    // Set additional user information if provided
+    user.setFirstName(userDTO.getFirstName());
+    user.setLastName(userDTO.getLastName());
+    user.setEmail(userDTO.getEmail());
 
     user.setEnabled(userDTO.getEnabled() == null || userDTO.getEnabled());
     user.setLocked(userDTO.getLocked() == null || userDTO.getLocked());
@@ -113,9 +118,22 @@ public class UserService {
       user.setUsername(userDTO.getUsername());
     }
 
-    if (userDTO.getPassword() != null) {
-        user.setPassword(this.passwordEncoder.encode(userDTO.getPassword()));
+    // Update user information if provided
+    if (userDTO.getFirstName() != null) {
+      user.setFirstName(userDTO.getFirstName());
     }
+
+    if (userDTO.getLastName() != null) {
+      user.setLastName(userDTO.getLastName());
+    }
+
+    if (userDTO.getEmail() != null) {
+      user.setEmail(userDTO.getEmail());
+    }
+    
+        if (userDTO.getPassword() != null) {
+        user.setPassword(this.passwordEncoder.encode(userDTO.getPassword()));
+        }
 
     if (userDTO.getLocked() != null && user.isLocked() != userDTO.getLocked()) {
       user.setLocked(userDTO.getLocked());

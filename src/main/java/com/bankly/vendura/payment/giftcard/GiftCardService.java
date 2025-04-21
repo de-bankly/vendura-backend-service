@@ -56,6 +56,7 @@ public class GiftCardService {
     if (giftCard.getType() == GiftCard.Type.GIFT_CARD) {
       this.giftCardTransactionService.createTransaction(
           giftCard, giftCardDTO.getInitialBalance(), null, user, "Gift card created", null);
+
     }
 
     return giftCard;

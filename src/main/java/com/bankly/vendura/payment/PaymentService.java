@@ -92,6 +92,7 @@ public class PaymentService {
         sale.getPayments().stream()
             .sorted(Comparator.comparingInt(Payment::getPaymentHierarchy).reversed())
             .toList();
+
     double remainingAmount = sale.calculateTotal();
     System.out.println("remainingAmount: " + remainingAmount);
     for (Payment payment : sortedPayments) {
@@ -140,16 +141,13 @@ public class PaymentService {
         }
       }
 
-      //if (!transactionSuccess) {
-        //revertAllTransactionsAndCancelSale(sale);
-        //return false;
-      //}
 
       if (transactionSuccess) {
         remainingAmount -= payment.getAmount();
         payment.setStatus(Payment.Status.COMPLETED);
         this.paymentRepository.save(payment);
       }
+
     }
 
     System.out.println("Remaining at the end of all payments: " + remainingAmount);
@@ -166,6 +164,7 @@ public class PaymentService {
   }
 
   private void processCashPayment(CashPayment payment) {
+
     if (payment.getHanded() < payment.getAmount()) {
       payment.setStatus(Payment.Status.FAILED);
       payment.setReturned(payment.getHanded());
@@ -176,6 +175,7 @@ public class PaymentService {
               + " €; expected at least "
               + payment.getAmount()
               + " €");
+
     }
 
     payment.setReturned(payment.getHanded() - payment.getAmount());
@@ -209,6 +209,7 @@ public class PaymentService {
           payment.getIssuer(),
           "Revert transaction on giftcard due to a fail of fulfilling payment TX#"
               + payment.getId(), null);
+
     }
 
     this.paymentRepository.save(payment);

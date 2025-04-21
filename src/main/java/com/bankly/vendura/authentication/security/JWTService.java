@@ -9,7 +9,6 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import java.security.Key;
 import java.util.*;
-import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -18,8 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 /**
@@ -71,6 +68,10 @@ public class JWTService {
     claims.put("enabled", user.isEnabled());
     claims.put("locked", user.isLocked());
 
+    claims.put("firstname", user.getFirstName());
+    claims.put("lastname", user.getLastName());
+    claims.put("email", user.getEmail());
+
     return Jwts.builder()
         .claims(claims)
         .subject(user.getUsername())
@@ -92,6 +93,10 @@ public class JWTService {
     String username = claims.getSubject();
     LOGGER.debug("Username: {}", username);
 
+    String firstname = claims.get("firstname", String.class);
+    String lastname = claims.get("lastname", String.class);
+    String email = claims.get("email", String.class);
+
     List<Map<String, Object>> rolesData = claims.get("roles", List.class);
     LOGGER.debug("Roles Data: {}", rolesData);
 
@@ -110,7 +115,7 @@ public class JWTService {
     boolean enabled = claims.get("enabled", Boolean.class);
     boolean locked = claims.get("locked", Boolean.class);
 
-      return new User(userId, username, null, roles, enabled, locked);
+    return new User(userId, username, null, firstname, lastname, email, roles, enabled, locked);
   }
 
   /**
@@ -173,5 +178,4 @@ public class JWTService {
           HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
 }
