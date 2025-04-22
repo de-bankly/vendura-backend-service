@@ -10,7 +10,6 @@ import com.bankly.vendura.inventory.supplier.model.SupplierFactory;
 import com.bankly.vendura.inventory.transactions.product.ProductTransactionService;
 import com.bankly.vendura.utilities.exceptions.EntityCreationException;
 import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -93,58 +92,29 @@ public class ProductService {
       product.setId(generateUniqueProductId());
     }
 
-    Set<Product> loadedConnectedProducts = new HashSet<>();
-    if (productDTO.getConnectedProducts() != null && !productDTO.getConnectedProducts().isEmpty()) {
-      Set<String> connectedProductIds =
-          productDTO.getConnectedProducts().stream()
-              .map(ProductDTO::getId)
-              .filter(id -> id != null && !id.trim().isEmpty())
-              .collect(Collectors.toSet());
+    if (productDTO.getConnectedProducts() != null) {
 
-      for (String connectedId : connectedProductIds) {
-        if (connectedId.equals(product.getId())) {
-          throw new EntityCreationException(
-              "A product cannot be connected to itself.",
-              HttpStatus.BAD_REQUEST,
-              connectedId,
-              false);
-        }
-
-        Product connectedProduct =
-            this.productRepository
-                .findById(connectedId)
-                .orElseThrow(
-                    () ->
-                        new EntityCreationException(
-                            "Connected product not found with ID: " + connectedId,
-                            HttpStatus.NOT_FOUND,
-                            connectedId,
-                            false));
-
-        if (createsCycle(product.getId(), connectedProduct)) {
+      for (ProductDTO cp1 : productDTO.getConnectedProducts()) {
+        Product connectedProduct = this.productRepository.findById(cp1.getId()).get();
+        if (connectedProduct.isConnectedTo(product)) {
           throw new EntityCreationException(
               "Cyclic connection detected: product "
-                  + connectedId
+                  + connectedProduct.getId()
                   + " would create a cycle with "
                   + product.getId(),
               HttpStatus.BAD_REQUEST,
-              connectedId,
+              connectedProduct.getId(),
               false);
         }
-
-        loadedConnectedProducts.add(connectedProduct);
       }
 
-      if (loadedConnectedProducts.size() != connectedProductIds.size()) {
-        throw new EntityCreationException(
-            "Could not find all connected products or duplicate IDs provided.",
-            HttpStatus.NOT_FOUND,
-            String.join(",", connectedProductIds),
-            false);
-      }
+      Set<Product> connectedProducts =
+          productDTO.getConnectedProducts().stream()
+              .map(ProductFactory::toEntity)
+              .collect(Collectors.toSet());
+
+      product.setConnectedProducts(connectedProducts);
     }
-
-    product.setConnectedProducts(loadedConnectedProducts);
 
     return this.productRepository.save(product);
   }
@@ -163,73 +133,6 @@ public class ProductService {
     } while (this.productRepository.existsById(productId));
 
     return productId;
-  }
-
-  private boolean createsCycle(String productId, Product connectedProduct) {
-    Set<String> visited = new HashSet<>();
-    return hasCycleRecursive(productId, connectedProduct, visited);
-  }
-
-  private boolean hasCycleRecursive(String targetId, Product current, Set<String> visited) {
-    if (current.getId().equals(targetId)) {
-      return true;
-    }
-
-    if (!visited.add(current.getId())) {
-      return false; // bereits besucht
-    }
-
-    for (Product next : current.getConnectedProducts()) {
-      if (hasCycleRecursive(targetId, next, visited)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  private Set<Product> loadAndValidateConnectedProducts(
-      String currentProductId, Set<ProductDTO> connectedDTOs) {
-    Set<Product> connectedProducts = new HashSet<>();
-    Set<String> connectedIds =
-        connectedDTOs.stream()
-            .map(ProductDTO::getId)
-            .filter(id -> id != null && !id.trim().isEmpty())
-            .collect(Collectors.toSet());
-
-    for (String connectedId : connectedIds) {
-      if (connectedId.equals(currentProductId)) {
-        throw new EntityCreationException(
-            "A product cannot be connected to itself.", HttpStatus.BAD_REQUEST, connectedId, false);
-      }
-
-      Product connectedProduct =
-          this.productRepository
-              .findById(connectedId)
-              .orElseThrow(
-                  () ->
-                      new EntityCreationException(
-                          "Connected product not found: " + connectedId,
-                          HttpStatus.NOT_FOUND,
-                          connectedId,
-                          false));
-
-      if (connectedProduct.getConnectedProducts().stream()
-          .anyMatch(p -> p.getId().equals(currentProductId))) {
-        throw new EntityCreationException(
-            "Circular connection detected between product "
-                + currentProductId
-                + " and "
-                + connectedId,
-            HttpStatus.BAD_REQUEST,
-            connectedId,
-            false);
-      }
-
-      connectedProducts.add(connectedProduct);
-    }
-
-    return connectedProducts;
   }
 
   @Transactional
@@ -287,8 +190,26 @@ public class ProductService {
     }
 
     if (productDTO.getConnectedProducts() != null) {
+
+      for (ProductDTO cp1 : productDTO.getConnectedProducts()) {
+        Product connectedProduct = this.productRepository.findById(cp1.getId()).get();
+        if (connectedProduct.isConnectedTo(product)) {
+          throw new EntityCreationException(
+                  "Cyclic connection detected: product "
+                          + connectedProduct.getId()
+                          + " would create a cycle with "
+                          + product.getId(),
+                  HttpStatus.BAD_REQUEST,
+                  connectedProduct.getId(),
+                  false);
+        }
+      }
+
       Set<Product> connectedProducts =
-          loadAndValidateConnectedProducts(id, productDTO.getConnectedProducts());
+              productDTO.getConnectedProducts().stream()
+                      .map(ProductFactory::toEntity)
+                      .collect(Collectors.toSet());
+
       product.setConnectedProducts(connectedProducts);
     }
 

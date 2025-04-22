@@ -112,6 +112,18 @@ public class Product {
         .orElse(0.0);
   }
 
+  public boolean isConnectedTo(Product product) {
+    System.out.println(product.getId() + " <=> " + this.id);
+    if (product.getId().equals(this.id)) return true;
+    if (product.getConnectedProducts().stream().map(Product::getId).anyMatch(this.id::equals)) return true;
+    for (Product connectedProduct : connectedProducts) {
+      if (isConnectedTo(connectedProduct)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
