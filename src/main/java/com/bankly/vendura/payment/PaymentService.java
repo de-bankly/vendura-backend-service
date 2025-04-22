@@ -93,7 +93,7 @@ public class PaymentService {
             .sorted(Comparator.comparingInt(Payment::getPaymentHierarchy).reversed())
             .toList();
 
-    double remainingAmount = sale.calculateTotal();
+    double remainingAmount = (double) Math.round(sale.calculateTotal() * 100) / 100;
     System.out.println("remainingAmount: " + remainingAmount);
     for (Payment payment : sortedPayments) {
       if (remainingAmount <= 0) {
