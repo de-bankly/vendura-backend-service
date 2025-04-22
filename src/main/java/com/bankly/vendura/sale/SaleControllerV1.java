@@ -2,13 +2,14 @@ package com.bankly.vendura.sale;
 
 import com.bankly.vendura.sale.model.SaleDTO;
 import java.util.Map;
+
+import com.bankly.vendura.sale.model.SaleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -16,6 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class SaleControllerV1 {
 
   private final SaleService saleService;
+  private final SaleRepository saleRepository;
+  private final DynamicSaleFactory dynamicSaleFactory;
+
+  @GetMapping
+  public ResponseEntity<Page<SaleDTO>> findAll(Pageable pageable) {
+      return ResponseEntity.ok(this.saleRepository.findAll(pageable).map(this.dynamicSaleFactory::toDTO));
+  }
 
   @PostMapping
   public ResponseEntity<?> submitSaleToProcess(@RequestBody SaleDTO saleDTO) {
