@@ -2,6 +2,7 @@ package com.bankly.vendura.sale;
 
 import com.bankly.vendura.authentication.user.model.User;
 import com.bankly.vendura.inventory.promotion.PromotionService;
+import com.bankly.vendura.inventory.transactions.product.ProductTransactionService;
 import com.bankly.vendura.payment.PaymentService;
 import com.bankly.vendura.sale.model.Sale;
 import com.bankly.vendura.sale.model.SaleDTO;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -23,6 +25,7 @@ public class SaleService {
   private final PaymentService paymentService;
   private final SaleRepository saleRepository;
   private final PromotionService promotionService;
+  private final ProductTransactionService productTransactionService;
 
   public void applyDiscountsToSale(Sale sale) {
     LOGGER.info("Applying discounts to sale with ID: {}", sale.getId());
@@ -31,27 +34,30 @@ public class SaleService {
     }
   }
 
+  @Transactional
   public Object submitSaleToProcess(SaleDTO saleDTO) {
     Sale sale =
         this.dynamicSaleFactory.createSale(
             saleDTO, (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+    this.saleRepository.save(sale);
 
     this.applyDiscountsToSale(sale);
+    this.productTransactionService.handleSale(sale);
 
     try {
       boolean paymentSuccess = this.paymentService.handlePaymentsOnSale(sale);
 
       if (!paymentSuccess) {
+        this.saleRepository.delete(sale);
         throw new IllegalArgumentException("Payment processing failed");
       }
 
     } catch (IllegalArgumentException e) {
+      this.saleRepository.delete(sale);
       throw e;
     }
 
     this.saleRepository.save(sale);
-
-    // TODO remove products from the warehouse
 
     return this.dynamicSaleFactory.toDTO(sale);
   }

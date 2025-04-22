@@ -3,6 +3,8 @@ package com.bankly.vendura.sale.model;
 import com.bankly.vendura.authentication.user.model.User;
 import com.bankly.vendura.deposit.model.DepositReceipt;
 import com.bankly.vendura.inventory.product.model.Product;
+import com.bankly.vendura.inventory.transactions.product.model.ProductTransactable;
+import com.bankly.vendura.inventory.transactions.product.model.ProductTransaction;
 import com.bankly.vendura.payment.model.Payment;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -15,7 +17,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "sales")
-public class Sale {
+public class Sale implements ProductTransactable {
 
   @Id private String id;
 
@@ -27,12 +29,31 @@ public class Sale {
   @DBRef private Set<DepositReceipt> depositReceipts = new HashSet<>();
 
   public double calculateTotal() {
+    System.out.println("Deposit receipts: "
+            + this.depositReceipts.stream().mapToDouble(DepositReceipt::calculateTotal).sum());
+    System.out.println("Positions: " + this.positions.stream().mapToDouble(Position::getPositionTotal).sum());
     return this.positions.stream().mapToDouble(Position::getPositionTotal).sum()
         - this.depositReceipts.stream().mapToDouble(DepositReceipt::calculateTotal).sum();
   }
 
+  public Set<Position> getAllAccumulatedPositions() {
+    Set<Position> allPositions = new HashSet<>(this.positions);
+    for (Position position : this.positions) {
+      if (position.getConnectedPositions().isEmpty()) {
+        continue;
+      }
+      allPositions.addAll(position.getConnectedPositions());
+    }
+    return allPositions;
+  }
+
   public static SaleBuilder builder() {
     return new SaleBuilder();
+  }
+
+  @Override
+  public ProductTransaction.TransactionType getTransactionType() {
+    return ProductTransaction.TransactionType.SALE;
   }
 
   public static class SaleBuilder {
@@ -88,7 +109,7 @@ public class Sale {
       this.product = product;
       this.connectedPositions =
           product.getConnectedProducts().stream()
-              .map(
+                  .map(
                   connectedProduct -> {
                     Position connectedPosition = new Position();
                     connectedPosition.setProduct(connectedProduct);

@@ -5,9 +5,8 @@ import com.bankly.vendura.inventory.product.model.Product;
 import com.bankly.vendura.inventory.transactions.product.model.ProductTransactable;
 import com.bankly.vendura.inventory.transactions.product.model.ProductTransaction;
 import com.bankly.vendura.inventory.transactions.product.model.ProductTransactionRepository;
-import com.bankly.vendura.inventory.transactions.product.model.StockAggregationResult;
+import com.bankly.vendura.sale.model.Sale;
 import java.util.Date;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -15,7 +14,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -81,4 +79,17 @@ public class ProductTransactionService {
   public Page<ProductTransaction> findAllTransactions(Pageable pageable) {
     return productTransactionRepository.findAllByOrderByTimestampDesc(pageable);
   }
+
+    public void handleSale(Sale sale) {
+      for (Sale.Position position : sale.getAllAccumulatedPositions()) {
+      System.out.println("Processing position: " + position);
+      System.out.println(position.getProduct());
+        if (!position.getProduct().isStandalone()) {
+          if (this.calculateCurrentStock(position.getProduct()) < position.getQuantity()) {
+            throw new IllegalArgumentException("Insufficient stock for product: " + position.getProduct().getName());
+          }
+          this.createTransaction(position.getProduct(), -position.getQuantity(), sale, sale.getCashier(), "Sale transaction");
+        }
+      }
+    }
 }
