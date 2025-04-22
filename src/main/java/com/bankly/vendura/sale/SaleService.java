@@ -1,6 +1,7 @@
 package com.bankly.vendura.sale;
 
 import com.bankly.vendura.authentication.user.model.User;
+import com.bankly.vendura.deposit.model.DepositReceiptRepository;
 import com.bankly.vendura.inventory.promotion.PromotionService;
 import com.bankly.vendura.inventory.transactions.product.ProductTransactionService;
 import com.bankly.vendura.payment.PaymentService;
@@ -26,6 +27,7 @@ public class SaleService {
   private final SaleRepository saleRepository;
   private final PromotionService promotionService;
   private final ProductTransactionService productTransactionService;
+  private final DepositReceiptRepository depositReceiptRepository;
 
   public void applyDiscountsToSale(Sale sale) {
     LOGGER.info("Applying discounts to sale with ID: {}", sale.getId());
@@ -55,6 +57,11 @@ public class SaleService {
     } catch (IllegalArgumentException e) {
       this.saleRepository.delete(sale);
       throw e;
+    }
+
+    if (!sale.getDepositReceipts().isEmpty()) {
+      sale.getDepositReceipts().forEach(receipt -> receipt.setRedeemed(true));
+      this.depositReceiptRepository.saveAll(sale.getDepositReceipts());
     }
 
     this.saleRepository.save(sale);
