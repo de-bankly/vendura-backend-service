@@ -182,7 +182,10 @@ public class ProductService {
   }
 
   public Product getProductEntityById(String id) {
-    return this.productRepository.findById(id).orElse(null);
+    return this.productRepository
+        .findById(id)
+        .orElseThrow(
+            () -> new EntityRetrieveException("Product not found", HttpStatus.NOT_FOUND, id));
   }
 
   public Product findById(String productId) {
