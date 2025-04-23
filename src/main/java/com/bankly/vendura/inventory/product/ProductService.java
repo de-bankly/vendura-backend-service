@@ -117,7 +117,7 @@ public class ProductService {
             .orElseThrow(
                 () -> new EntityRetrieveException("Product not found", HttpStatus.NOT_FOUND, id));
 
-    if (productDTO.getId() != null) {
+    if (productDTO.getId() != null && productDTO.getId().isEmpty()) {
       if (this.productRepository.findById(productDTO.getId()).isPresent()) {
         throw new EntityCreationException(
             "Product with that ID already exists",
