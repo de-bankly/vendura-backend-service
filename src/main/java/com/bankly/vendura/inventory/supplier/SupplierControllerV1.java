@@ -6,6 +6,9 @@ import com.bankly.vendura.inventory.supplier.model.SupplierRepository;
 import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -23,12 +26,17 @@ public class SupplierControllerV1 {
 
   @GetMapping
   @PreAuthorize("hasRole('INVENTORY')")
+  @Cacheable(
+          value = "supplierPage",
+          key =
+                  "'all?page=' + #pageable.getPageNumber() + ',size=' + #pageable.getPageSize() + ',sort=' + #pageable.getSort().toString()")
   public ResponseEntity<Page<SupplierDTO>> getSuppliers(Pageable pageable) {
     return ResponseEntity.ok(this.supplierRepository.findAll(pageable).map(SupplierFactory::toDTO));
   }
 
   @GetMapping("/{id}")
   @PreAuthorize("hasRole('INVENTORY')")
+  @Cacheable(value = "supplier", key = "#id")
   public ResponseEntity<SupplierDTO> getSupplierById(@PathVariable("id") String id) {
     return ResponseEntity.ok(
         this.supplierRepository
@@ -40,6 +48,7 @@ public class SupplierControllerV1 {
 
   @PostMapping
   @PreAuthorize("hasRole('INVENTORY')")
+  @Caching(evict = {@CacheEvict(value = "supplierPage", allEntries = true)})
   public ResponseEntity<SupplierDTO> createSupplier(@RequestBody SupplierDTO supplierDTO) {
     return ResponseEntity.ok(
         SupplierFactory.toDTO(this.supplierService.createSupplier(supplierDTO)));
@@ -47,6 +56,10 @@ public class SupplierControllerV1 {
 
   @PutMapping("/{id}")
   @PreAuthorize("hasRole('INVENTORY')")
+  @Caching(evict = {
+          @CacheEvict(value = "supplierPage", allEntries = true),
+          @CacheEvict(value = "supplier", key = "#id")
+  })
   public ResponseEntity<SupplierDTO> updateSupplier(
       @PathVariable("id") String id, @RequestBody SupplierDTO supplierDTO) {
     return ResponseEntity.ok(
@@ -55,6 +68,10 @@ public class SupplierControllerV1 {
 
   @DeleteMapping("/{id}")
   @PreAuthorize("hasRole('INVENTORY')")
+  @Caching(evict = {
+          @CacheEvict(value = "supplierPage", allEntries = true),
+          @CacheEvict(value = "supplier", key = "#id")
+  })
   public ResponseEntity<?> deleteSupplier(@PathVariable("id") String id) {
     this.supplierRepository.deleteById(id);
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

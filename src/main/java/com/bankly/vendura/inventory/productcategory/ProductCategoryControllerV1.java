@@ -6,6 +6,9 @@ import com.bankly.vendura.inventory.productcategory.model.ProductCategoryReposit
 import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -23,6 +26,10 @@ public class ProductCategoryControllerV1 {
 
   @GetMapping
   @PreAuthorize("hasRole('POS')")
+  @Cacheable(
+          value = "productCategoryPage",
+          key =
+                  "'all?page=' + #pageable.getPageNumber() + ',size=' + #pageable.getPageSize() + ',sort=' + #pageable.getSort().toString()")
   public ResponseEntity<Page<ProductCategoryDTO>> getProductCategories(Pageable pageable) {
     return ResponseEntity.ok(
         this.productCategoryRepository.findAll(pageable).map(ProductCategoryFactory::toDTO));
@@ -30,6 +37,7 @@ public class ProductCategoryControllerV1 {
 
   @GetMapping("/{id}")
   @PreAuthorize("hasRole('POS')")
+  @Cacheable(value = "productCategory", key = "#id")
   public ResponseEntity<ProductCategoryDTO> getProductCategoryByID(@PathVariable("id") String id) {
     return ResponseEntity.ok(
         ProductCategoryFactory.toDTO(
@@ -43,6 +51,7 @@ public class ProductCategoryControllerV1 {
 
   @PostMapping
   @PreAuthorize("hasRole('ADMIN')")
+  @Caching(evict = {@CacheEvict(value = "productCategoryPage", allEntries = true)})
   public ResponseEntity<ProductCategoryDTO> createProductCategory(
       @RequestBody ProductCategoryDTO productCategoryDTO) {
     return ResponseEntity.ok(
@@ -51,6 +60,10 @@ public class ProductCategoryControllerV1 {
 
   @PutMapping("/{id}")
   @PreAuthorize("hasRole('ADMIN')")
+  @Caching(evict = {
+          @CacheEvict(value = "productCategoryPage", allEntries = true),
+          @CacheEvict(value = "productCategory", key = "#id")
+  })
   public ResponseEntity<ProductCategoryDTO> updateProductCategory(
       @PathVariable("id") String id, @RequestBody ProductCategoryDTO productCategoryDTO) {
     return ResponseEntity.ok(
@@ -59,6 +72,10 @@ public class ProductCategoryControllerV1 {
 
   @DeleteMapping("/{id}")
   @PreAuthorize("hasRole('ADMIN')")
+  @Caching(evict = {
+          @CacheEvict(value = "productCategoryPage", allEntries = true),
+          @CacheEvict(value = "productCategory", key = "#id")
+  })
   public ResponseEntity<?> deleteProductCategory(@PathVariable("id") String id) {
     this.productCategoryService.delete(id);
     return ResponseEntity.noContent().build();
