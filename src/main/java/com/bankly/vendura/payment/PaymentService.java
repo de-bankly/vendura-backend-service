@@ -47,7 +47,7 @@ public class  PaymentService {
         sale.getId(),
         payment.getGiftCard().getId(),
         remainingBalance);
-      if (payment.getGiftCard().getExpirationDate().before(new Date())) {
+      if (payment.getGiftCard().getExpirationDate()!= null && payment.getGiftCard().getExpirationDate().before(new Date())) {
         throw new IllegalArgumentException("Giftcard is expired!");
       }
       if (payment.getGiftCard().getType() == GiftCard.Type.DISCOUNT_CARD) {
