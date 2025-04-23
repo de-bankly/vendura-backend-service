@@ -8,6 +8,7 @@ import com.bankly.vendura.payment.PaymentService;
 import com.bankly.vendura.sale.model.Sale;
 import com.bankly.vendura.sale.model.SaleDTO;
 import com.bankly.vendura.sale.model.SaleRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,8 @@ public class SaleService {
       this.promotionService.applyPromotion(position);
     }
   }
+
+
 
   @Transactional
   public Object submitSaleToProcess(SaleDTO saleDTO) {
@@ -68,4 +71,17 @@ public class SaleService {
 
     return this.dynamicSaleFactory.toDTO(sale);
   }
+
+  @PostConstruct
+  public void init() {
+    // Initialize any necessary components or configurations here
+    LOGGER.info("SaleService initialized");
+    for (Sale sale : this.saleRepository.findAll()) {
+      if (sale.getPositions().stream().anyMatch(position -> position.getProduct() == null)) {
+        this.saleRepository.delete(sale);
+        LOGGER.warn("Deleted sale with ID {} due to null product in position", sale.getId());
+      }
+    }
+  }
+
 }

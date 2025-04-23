@@ -29,6 +29,7 @@ public class Sale implements ProductTransactable {
   @DBRef private Set<DepositReceipt> depositReceipts = new HashSet<>();
 
   public double calculateTotal() {
+    System.out.println(this.id + " calculating total");
     System.out.println("Deposit receipts: "
             + this.depositReceipts.stream().mapToDouble(DepositReceipt::calculateTotal).sum());
     System.out.println("Positions: " + this.positions.stream().mapToDouble(Position::getPositionTotal).sum());
