@@ -51,7 +51,7 @@ public class DepositService {
     StringBuilder id;
     do {
       id = new StringBuilder();
-      for (int i = 0; i < 10; i++) {
+      for (int i = 0; i < 13; i++) {
         id.append((int) (Math.random() * 10));
       }
     } while (this.depositReceiptRepository.existsById(id.toString()));
