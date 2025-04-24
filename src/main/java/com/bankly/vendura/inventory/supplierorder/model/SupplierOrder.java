@@ -1,19 +1,17 @@
 package com.bankly.vendura.inventory.supplierorder.model;
 
 import com.bankly.vendura.inventory.product.model.Product;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Set;
-
+import com.bankly.vendura.inventory.supplier.model.Supplier;
 import com.bankly.vendura.inventory.transactions.product.model.ProductTransactable;
 import com.bankly.vendura.inventory.transactions.product.model.ProductTransaction;
+import java.util.Date;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
-import com.bankly.vendura.inventory.supplier.model.Supplier;
 
 @Data
 @Document(collection = "supplier_orders")
@@ -24,9 +22,9 @@ public class SupplierOrder implements ProductTransactable {
   @Id private String id;
 
   private Date timestamp;
-  
+
   @DBRef private Supplier supplier;
-  
+
   private Date expectedDeliveryDate;
   private String notes;
   private boolean automaticOrder;

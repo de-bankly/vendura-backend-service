@@ -13,7 +13,6 @@ import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
 import com.bankly.vendura.utilities.exceptions.EntityUpdateException;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -30,62 +29,51 @@ import org.springframework.transaction.annotation.Transactional;
 public class SupplierOrderService {
 
   private static final Logger logger = LoggerFactory.getLogger(SupplierOrderService.class);
-  
+
   private final ProductTransactionService productTransactionService;
   private final UserRepository userRepository;
   private final SupplierOrderRepository supplierOrderRepository;
   private final SupplierRepository supplierRepository;
 
-  /**
-   * Create a new supplier order
-   */
+  /** Create a new supplier order */
   @Transactional
   public SupplierOrder create(SupplierOrderDTO supplierOrderDTO) {
     // Set default values if not provided
     if (supplierOrderDTO.getTimestamp() == null) {
       supplierOrderDTO.setTimestamp(new Date());
     }
-    
+
     if (supplierOrderDTO.getOrderStatus() == null) {
       supplierOrderDTO.setOrderStatus(SupplierOrderDTO.OrderStatus.PLACED);
     }
-    
+
     SupplierOrder supplierOrder = SupplierOrderFactory.fromDTO(supplierOrderDTO);
     return this.supplierOrderRepository.save(supplierOrder);
   }
 
-  /**
-   * Get supplier orders by status
-   */
-  public Page<SupplierOrder> getSupplierOrdersByStatus(SupplierOrder.OrderStatus status, Pageable pageable) {
+  /** Get supplier orders by status */
+  public Page<SupplierOrder> getSupplierOrdersByStatus(
+      SupplierOrder.OrderStatus status, Pageable pageable) {
     return supplierOrderRepository.findByOrderStatus(status, pageable);
   }
-  
-  /**
-   * Get supplier orders by supplier ID
-   */
+
+  /** Get supplier orders by supplier ID */
   public Page<SupplierOrder> getSupplierOrdersBySupplierId(String supplierId, Pageable pageable) {
     return supplierOrderRepository.findBySupplierId(supplierId, pageable);
   }
-  
-  /**
-   * Get supplier orders by automatic order flag
-   */
+
+  /** Get supplier orders by automatic order flag */
   public Page<SupplierOrder> getAutomaticSupplierOrders(boolean isAutomatic, Pageable pageable) {
     return supplierOrderRepository.findIsAutomaticOrder(isAutomatic, pageable);
   }
 
-  /**
-   * Find pending supplier orders
-   */
+  /** Find pending supplier orders */
   public List<SupplierOrder> findPendingOrders() {
     return supplierOrderRepository.findByOrderStatusIn(
         List.of(SupplierOrder.OrderStatus.PLACED, SupplierOrder.OrderStatus.SHIPPED));
   }
 
-  /**
-   * Update a supplier order
-   */
+  /** Update a supplier order */
   @Transactional
   public SupplierOrder update(String id, SupplierOrderDTO supplierOrderDTO, String username) {
     SupplierOrder supplierOrder =
@@ -104,7 +92,7 @@ public class SupplierOrderService {
       throw new EntityUpdateException(
           "Cannot update timestamp", HttpStatus.UNPROCESSABLE_ENTITY, "timestamp");
     }
-    
+
     // Update supplier if provided
     if (supplierOrderDTO.getSupplier() != null && supplierOrderDTO.getSupplier().getId() != null) {
       supplierOrder.setSupplier(
@@ -113,19 +101,19 @@ public class SupplierOrderService {
               .orElseThrow(
                   () ->
                       new EntityRetrieveException(
-                          "Supplier not found", 
-                          HttpStatus.NOT_FOUND, 
+                          "Supplier not found",
+                          HttpStatus.NOT_FOUND,
                           supplierOrderDTO.getSupplier().getId())));
     }
-    
+
     if (supplierOrderDTO.getExpectedDeliveryDate() != null) {
       supplierOrder.setExpectedDeliveryDate(supplierOrderDTO.getExpectedDeliveryDate());
     }
-    
+
     if (supplierOrderDTO.getNotes() != null) {
       supplierOrder.setNotes(supplierOrderDTO.getNotes());
     }
-    
+
     if (supplierOrderDTO.isAutomaticOrder() != supplierOrder.isAutomaticOrder()) {
       supplierOrder.setAutomaticOrder(supplierOrderDTO.isAutomaticOrder());
     }
@@ -157,8 +145,9 @@ public class SupplierOrderService {
           && supplierOrder.getOrderStatus() != SupplierOrder.OrderStatus.DELIVERED) {
 
         User user = this.userRepository.findUserByUsername(username).orElseThrow();
-        
-        logger.info("Creating inventory transactions for supplier order {} marked as DELIVERED", id);
+
+        logger.info(
+            "Creating inventory transactions for supplier order {} marked as DELIVERED", id);
 
         for (SupplierOrder.Position position : supplierOrder.getPositions()) {
           this.productTransactionService.createTransaction(
@@ -167,11 +156,13 @@ public class SupplierOrderService {
               supplierOrder,
               user,
               "Automatic entry in the warehouse because the status of the supplier order has been changed to DELIVERED");
-              
-          logger.info("Created transaction for product {} with quantity {}", 
-              position.getProduct().getId(), position.getAmount());
+
+          logger.info(
+              "Created transaction for product {} with quantity {}",
+              position.getProduct().getId(),
+              position.getAmount());
         }
-        
+
         logger.info("All transactions created successfully for supplier order {}", id);
       }
 
@@ -181,9 +172,7 @@ public class SupplierOrderService {
     return this.supplierOrderRepository.save(supplierOrder);
   }
 
-  /**
-   * Delete a supplier order
-   */
+  /** Delete a supplier order */
   @Transactional
   public void delete(String id) {
     SupplierOrder supplierOrder =
@@ -193,13 +182,11 @@ public class SupplierOrderService {
                 () ->
                     new EntityRetrieveException(
                         "Supplier order not found", HttpStatus.NOT_FOUND, id));
-                        
+
     // Can only delete orders that are not DELIVERED
     if (supplierOrder.getOrderStatus() == SupplierOrder.OrderStatus.DELIVERED) {
       throw new EntityUpdateException(
-          "Cannot delete a delivered order",
-          HttpStatus.UNPROCESSABLE_ENTITY,
-          "orderStatus");
+          "Cannot delete a delivered order", HttpStatus.UNPROCESSABLE_ENTITY, "orderStatus");
     }
 
     this.supplierOrderRepository.delete(supplierOrder);

@@ -3,10 +3,8 @@ package com.bankly.vendura.authentication.user.model;
 import com.bankly.vendura.authentication.roles.model.Role;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

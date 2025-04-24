@@ -18,7 +18,6 @@ import com.bankly.vendura.sale.model.Sale;
 import com.bankly.vendura.sale.model.SaleDTO;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,7 +96,10 @@ public class DynamicSaleFactory {
 
     if (!saleDTO.getDepositReceipts().isEmpty()) {
       List<DepositReceipt> depositReceipts =
-              this.depositReceiptRepository.findAllById(saleDTO.getDepositReceipts().stream().map(DepositReceiptDTO::getId).collect(Collectors.toSet()));
+          this.depositReceiptRepository.findAllById(
+              saleDTO.getDepositReceipts().stream()
+                  .map(DepositReceiptDTO::getId)
+                  .collect(Collectors.toSet()));
       sale.getDepositReceipts().addAll(depositReceipts);
     }
 
@@ -120,10 +122,11 @@ public class DynamicSaleFactory {
     dto.getPositions()
         .addAll(sale.getPositions().stream().map(this::toDTO).collect(Collectors.toSet()));
 
-    dto.getDepositReceipts().addAll(
-        sale.getDepositReceipts().stream()
-            .map(DepositReceiptFactory::toDTO)
-            .collect(Collectors.toSet()));
+    dto.getDepositReceipts()
+        .addAll(
+            sale.getDepositReceipts().stream()
+                .map(DepositReceiptFactory::toDTO)
+                .collect(Collectors.toSet()));
 
     return dto;
   }

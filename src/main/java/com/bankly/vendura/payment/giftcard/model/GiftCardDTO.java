@@ -15,18 +15,27 @@ import lombok.NoArgsConstructor;
 @ValidTypeBalanceOptions(groups = {ValidationGroup.Create.class})
 public class GiftCardDTO {
 
-  @Null(message = "ID will be auto-generated on creation and cannot be updated", groups = {ValidationGroup.Create.class, ValidationGroup.Update.class})
+  @Null(
+      message = "ID will be auto-generated on creation and cannot be updated",
+      groups = {ValidationGroup.Create.class, ValidationGroup.Update.class})
   private String id;
 
-  @Null(message = "Issue date will be set while creation and cannot be defined externally", groups = {ValidationGroup.Create.class, ValidationGroup.Update.class})
+  @Null(
+      message = "Issue date will be set while creation and cannot be defined externally",
+      groups = {ValidationGroup.Create.class, ValidationGroup.Update.class})
   private Date issueDate;
+
   private Date expirationDate;
+
   @Null(groups = ValidationGroup.Update.class, message = "Initial balance cannot be updated")
   private Double initialBalance;
+
   @Null(groups = ValidationGroup.Update.class, message = "Issuer ID cannot be updated")
   private String issuerId;
+
   private Integer discountPercentage;
   private Integer maximumUsages;
+
   @NotNull(message = "Type cannot be null", groups = ValidationGroup.Create.class)
   private Type type;
 
@@ -104,7 +113,6 @@ public class GiftCardDTO {
       this.maximumUsages = maximumUsages;
       return this;
     }
-
 
     public GiftCardDTO build() {
       return new GiftCardDTO(this);

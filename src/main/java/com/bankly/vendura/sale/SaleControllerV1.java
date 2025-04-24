@@ -1,8 +1,6 @@
 package com.bankly.vendura.sale;
 
 import com.bankly.vendura.sale.model.SaleDTO;
-import java.util.Map;
-
 import com.bankly.vendura.sale.model.SaleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,15 +20,16 @@ public class SaleControllerV1 {
 
   @GetMapping
   public ResponseEntity<Page<SaleDTO>> findAll(Pageable pageable) {
-      return ResponseEntity.ok(this.saleRepository.findAll(pageable).map(this.dynamicSaleFactory::toDTO));
+    return ResponseEntity.ok(
+        this.saleRepository.findAll(pageable).map(this.dynamicSaleFactory::toDTO));
   }
 
   @PostMapping
   public ResponseEntity<?> submitSaleToProcess(@RequestBody SaleDTO saleDTO) {
-    //try {
-      return ResponseEntity.ok(this.saleService.submitSaleToProcess(saleDTO));
-    //} catch (IllegalArgumentException e) {
+    // try {
+    return ResponseEntity.ok(this.saleService.submitSaleToProcess(saleDTO));
+    // } catch (IllegalArgumentException e) {
     //  return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-    //}
+    // }
   }
 }

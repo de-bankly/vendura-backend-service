@@ -3,18 +3,17 @@ package com.bankly.vendura.inventory.product.model;
 import com.bankly.vendura.inventory.brand.model.Brand;
 import com.bankly.vendura.inventory.productcategory.model.ProductCategory;
 import com.bankly.vendura.inventory.supplier.model.Supplier;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 @Data
 @Document(collection = "products")
@@ -62,6 +61,7 @@ public class Product {
 
   /**
    * Gets the current price from the latest price history entry
+   *
    * @return the current price or 0 if no price history exists
    */
   public double getPrice() {
@@ -76,6 +76,7 @@ public class Product {
 
   /**
    * Gets the current purchase price from the latest price history entry
+   *
    * @return the current purchase price or 0 if no price history exists
    */
   public double getPurchasePrice() {
@@ -90,6 +91,7 @@ public class Product {
 
   /**
    * Gets the price at a specific point in time
+   *
    * @param date The date to check for price
    * @return The price at the given date or latest price before that date
    */
@@ -106,6 +108,7 @@ public class Product {
 
   /**
    * Gets the purchase price at a specific point in time
+   *
    * @param date The date to check for purchase price
    * @return The purchase price at the given date or latest price before that date
    */
@@ -129,5 +132,4 @@ public class Product {
     private double price;
     @DBRef private Supplier supplier;
   }
-
 }

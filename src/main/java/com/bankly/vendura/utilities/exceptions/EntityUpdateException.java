@@ -1,11 +1,11 @@
 package com.bankly.vendura.utilities.exceptions;
 
+import java.util.Map;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
-import java.util.Map;
-
-public class EntityUpdateException extends RuntimeException implements HttpStatusCodeContainer, CustomHTTPDetailedException {
+public class EntityUpdateException extends RuntimeException
+    implements HttpStatusCodeContainer, CustomHTTPDetailedException {
 
   public EntityUpdateException(String message, HttpStatus httpStatus, String attributeFailure) {
     super(message);
@@ -13,8 +13,7 @@ public class EntityUpdateException extends RuntimeException implements HttpStatu
     this.attributeFailure = attributeFailure;
   }
 
-  @Getter
-  private final HttpStatus httpStatus;
+  @Getter private final HttpStatus httpStatus;
   private final String attributeFailure;
 
   @Override

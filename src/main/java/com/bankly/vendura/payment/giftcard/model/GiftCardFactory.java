@@ -26,6 +26,7 @@ public class GiftCardFactory {
         giftCard.getDiscountPercentage() == 0 ? null : giftCard.getDiscountPercentage(),
         giftCard.getMaximumUsages() == 0 ? null : giftCard.getMaximumUsages(),
         giftCard.getType() != null ? giftCard.getType().toDTOType() : null,
-        null, null);
+        null,
+        null);
   }
 }

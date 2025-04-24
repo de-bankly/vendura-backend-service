@@ -1,14 +1,10 @@
 package com.bankly.vendura.payment.giftcard;
 
 import com.bankly.vendura.authentication.user.model.User;
-import com.bankly.vendura.payment.giftcard.transaction.GiftCardTransactionService;
-import com.bankly.vendura.payment.giftcard.transaction.GiftCardTransactionService;
 import com.bankly.vendura.payment.giftcard.model.GiftCard;
 import com.bankly.vendura.payment.giftcard.model.GiftCardDTO;
 import com.bankly.vendura.payment.giftcard.model.GiftCardFactory;
 import com.bankly.vendura.utilities.ValidationGroup;
-import com.bankly.vendura.payment.giftcard.model.GiftCardRepository;
-import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +46,8 @@ public class GiftCardControllerV1 {
   @PostMapping
   @PreAuthorize("hasRole('MANAGER')")
   public ResponseEntity<GiftCardDTO> createGiftCard(
-      @RequestBody @Validated(ValidationGroup.Create.class) GiftCardDTO giftCardDTO, @AuthenticationPrincipal User user) {
+      @RequestBody @Validated(ValidationGroup.Create.class) GiftCardDTO giftCardDTO,
+      @AuthenticationPrincipal User user) {
     LoggerFactory.getLogger(GiftCardControllerV1.class)
         .error(user == null ? "USER IS NULL" : user.toString());
     return ResponseEntity.ok(
