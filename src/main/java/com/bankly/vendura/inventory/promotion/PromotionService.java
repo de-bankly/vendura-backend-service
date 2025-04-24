@@ -88,7 +88,11 @@ public class PromotionService {
       return position;
     }
 
-    LOGGER.info("Applying promotion: {} for product: {} ({})", promotion.getId(), position.getProduct().getName(), position.getProduct().getId());
+    LOGGER.info(
+        "Applying promotion: {} for product: {} ({})",
+        promotion.getId(),
+        position.getProduct().getName(),
+        position.getProduct().getId());
     position.setDiscountEuro(promotion.getDiscount());
     return position;
   }

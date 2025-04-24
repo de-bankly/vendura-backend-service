@@ -12,13 +12,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 public class Supplier {
 
-    @Id private String id;
+  @Id private String id;
 
-    private String legalName;
-    private String street;
-    private String streetNo;
-    private String city;
-    private String zip;
-    private String country;
-
+  private String legalName;
+  private String street;
+  private String streetNo;
+  private String city;
+  private String zip;
+  private String country;
 }

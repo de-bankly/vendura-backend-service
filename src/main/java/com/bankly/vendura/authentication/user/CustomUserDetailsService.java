@@ -57,14 +57,14 @@ public class CustomUserDetailsService implements UserDetailsService {
     return user;
 
     /*return new User(
-        user.getUsername(),
-        user.getPassword(),
-        user.isEnabled(),
-        true,
-        true,
-        !user.isLocked(),
-        mapRolesToAuthorities(
-            user.getRoles().stream().filter(Role::isActive).collect(Collectors.toSet())));*/
+    user.getUsername(),
+    user.getPassword(),
+    user.isEnabled(),
+    true,
+    true,
+    !user.isLocked(),
+    mapRolesToAuthorities(
+        user.getRoles().stream().filter(Role::isActive).collect(Collectors.toSet())));*/
   }
 
   /**

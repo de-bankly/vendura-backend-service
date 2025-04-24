@@ -25,12 +25,12 @@ public class PromotionControllerV1 {
 
   @GetMapping
   @Cacheable(
-          value = "promotionPage",
-          key =
-                  "'all?page=' + #pageable.getPageNumber() + ',size=' + #pageable.getPageSize() + ',sort=' + #pageable.getSort().toString()")
+      value = "promotionPage",
+      key =
+          "'all?page=' + #pageable.getPageNumber() + ',size=' + #pageable.getPageSize() + ',sort=' + #pageable.getSort().toString()")
   public ResponseEntity<Page<PromotionDTO>> getAllPromotions(Pageable pageable) {
     return ResponseEntity.ok(
-            this.promotionService.getAllPromotions(pageable).map(promotionFactory::toDTO));
+        this.promotionService.getAllPromotions(pageable).map(promotionFactory::toDTO));
   }
 
   @GetMapping("/{id}")
@@ -43,33 +43,34 @@ public class PromotionControllerV1 {
   @PreAuthorize("hasRole('MANAGER')")
   @Caching(evict = {@CacheEvict(value = "promotionPage", allEntries = true)})
   public ResponseEntity<PromotionDTO> createPromotion(
-          @RequestBody @Validated(ValidationGroup.Create.class) PromotionDTO promotionDTO) {
+      @RequestBody @Validated(ValidationGroup.Create.class) PromotionDTO promotionDTO) {
     return ResponseEntity.ok(
-            promotionFactory.toDTO(this.promotionService.createPromotion(promotionDTO)));
+        promotionFactory.toDTO(this.promotionService.createPromotion(promotionDTO)));
   }
 
   @PutMapping("/{id}")
   @PreAuthorize("hasRole('MANAGER')")
-  @Caching(evict = {
-          @CacheEvict(value = "promotionPage", allEntries = true),
-          @CacheEvict(value = "promotion", key = "#id")
-  })
+  @Caching(
+      evict = {
+        @CacheEvict(value = "promotionPage", allEntries = true),
+        @CacheEvict(value = "promotion", key = "#id")
+      })
   public ResponseEntity<PromotionDTO> updatePromotion(
-          @PathVariable("id") String id,
-          @RequestBody @Validated(ValidationGroup.Update.class) PromotionDTO promotionDTO) {
+      @PathVariable("id") String id,
+      @RequestBody @Validated(ValidationGroup.Update.class) PromotionDTO promotionDTO) {
     return ResponseEntity.ok(
-            promotionFactory.toDTO(this.promotionService.updatePromotion(id, promotionDTO)));
+        promotionFactory.toDTO(this.promotionService.updatePromotion(id, promotionDTO)));
   }
 
   @DeleteMapping("/{id}")
   @PreAuthorize("hasRole('MANAGER')")
-  @Caching(evict = {
-          @CacheEvict(value = "promotionPage", allEntries = true),
-          @CacheEvict(value = "promotion", key = "#id")
-  })
+  @Caching(
+      evict = {
+        @CacheEvict(value = "promotionPage", allEntries = true),
+        @CacheEvict(value = "promotion", key = "#id")
+      })
   public ResponseEntity<Void> deletePromotion(@PathVariable("id") String id) {
     this.promotionService.deletePromotion(id);
     return ResponseEntity.noContent().build();
   }
-
 }

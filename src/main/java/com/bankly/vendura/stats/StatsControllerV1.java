@@ -1,13 +1,9 @@
 package com.bankly.vendura.stats;
 
-import com.bankly.vendura.inventory.product.model.Product;
-import com.bankly.vendura.inventory.product.model.ProductDTO;
 import com.bankly.vendura.sale.model.TopSellingProductsDTO;
 import com.bankly.vendura.stats.model.SummaryDTO;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Map;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

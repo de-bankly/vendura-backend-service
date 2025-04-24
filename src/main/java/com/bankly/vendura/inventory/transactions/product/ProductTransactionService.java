@@ -34,8 +34,12 @@ public class ProductTransactionService {
             .product(product)
             .quantity(quantity)
             .transactionCause(transactionCause)
-            .transactionType(transactionCause != null ? transactionCause.getTransactionType() : 
-                quantity > 0 ? ProductTransaction.TransactionType.WAREHOUSE_IN : ProductTransaction.TransactionType.WAREHOUSE_OUT)
+            .transactionType(
+                transactionCause != null
+                    ? transactionCause.getTransactionType()
+                    : quantity > 0
+                        ? ProductTransaction.TransactionType.WAREHOUSE_IN
+                        : ProductTransaction.TransactionType.WAREHOUSE_OUT)
             .issuer(issuer)
             .message(message)
             .timestamp(new Date())
@@ -60,9 +64,10 @@ public class ProductTransactionService {
 
     return result == null ? 0 : result.getQuantity();
   }
-  
+
   /**
    * Find all transactions for a product
+   *
    * @param productId The product ID
    * @param pageable Pagination parameters
    * @return Page of transactions
@@ -70,9 +75,10 @@ public class ProductTransactionService {
   public Page<ProductTransaction> findTransactionsByProductId(String productId, Pageable pageable) {
     return productTransactionRepository.findByProductIdOrderByTimestampDesc(productId, pageable);
   }
-  
+
   /**
    * Find all transactions in the system
+   *
    * @param pageable Pagination parameters
    * @return Page of transactions
    */
@@ -80,16 +86,20 @@ public class ProductTransactionService {
     return productTransactionRepository.findAllByOrderByTimestampDesc(pageable);
   }
 
-    public void handleSale(Sale sale) {
-      for (Sale.Position position : sale.getAllAccumulatedPositions()) {
-      System.out.println("Processing position: " + position);
-      System.out.println(position.getProduct());
-        if (!position.getProduct().isStandalone()) {
-          if (this.calculateCurrentStock(position.getProduct()) < position.getQuantity()) {
-            throw new IllegalArgumentException("Insufficient stock for product: " + position.getProduct().getName());
-          }
-          this.createTransaction(position.getProduct(), -position.getQuantity(), sale, sale.getCashier(), "Sale transaction");
+  public void handleSale(Sale sale) {
+    for (Sale.Position position : sale.getAllAccumulatedPositions()) {
+      if (!position.getProduct().isStandalone()) {
+        if (this.calculateCurrentStock(position.getProduct()) < position.getQuantity()) {
+          throw new IllegalArgumentException(
+              "Insufficient stock for product: " + position.getProduct().getName());
         }
+        this.createTransaction(
+            position.getProduct(),
+            -position.getQuantity(),
+            sale,
+            sale.getCashier(),
+            "Sale transaction");
       }
     }
+  }
 }

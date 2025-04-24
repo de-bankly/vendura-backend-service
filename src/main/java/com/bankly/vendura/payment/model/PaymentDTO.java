@@ -1,8 +1,7 @@
 package com.bankly.vendura.payment.model;
 
-import lombok.*;
-
 import java.util.Date;
+import lombok.*;
 
 @Builder
 @Getter

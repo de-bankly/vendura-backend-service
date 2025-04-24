@@ -29,15 +29,16 @@ public class PaymentFactory {
     if (payment instanceof CashPayment) {
       CashPayment cashPayment = (CashPayment) payment;
 
-      builder.handed(cashPayment.getHanded()).returned(cashPayment.getReturned()).type(PaymentDTO.Type.CASH);
-
+      builder
+          .handed(cashPayment.getHanded())
+          .returned(cashPayment.getReturned())
+          .type(PaymentDTO.Type.CASH);
     }
 
     if (payment instanceof GiftCardPayment) {
       GiftCardPayment giftCardPayment = (GiftCardPayment) payment;
 
       builder.giftcardId(giftCardPayment.getGiftCard().getId()).type(PaymentDTO.Type.GIFTCARD);
-
     }
 
     return builder.build();
@@ -51,7 +52,10 @@ public class PaymentFactory {
     payment.setTimestamp(paymentDTO.getTimestamp());
     payment.setAmount(paymentDTO.getAmount());
     payment.setIssuer(userRepository.findById(paymentDTO.getIssuerId()).orElse(null));
-    payment.setStatus(paymentDTO.getStatus() == null ? Payment.Status.PENDING : paymentDTO.getStatus().toEntityStatus());
+    payment.setStatus(
+        paymentDTO.getStatus() == null
+            ? Payment.Status.PENDING
+            : paymentDTO.getStatus().toEntityStatus());
 
     if (payment instanceof CardPayment) {
       CardPayment cardPayment = (CardPayment) payment;

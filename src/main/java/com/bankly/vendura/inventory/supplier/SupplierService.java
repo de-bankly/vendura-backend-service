@@ -27,10 +27,11 @@ public class SupplierService {
         || supplier.getCity() == null
         || supplier.getZip() == null
         || supplier.getCountry() == null) {
-        throw new EntityCreationException("All fields are required", HttpStatus.UNPROCESSABLE_ENTITY, "supplierDTO", true);
+      throw new EntityCreationException(
+          "All fields are required", HttpStatus.UNPROCESSABLE_ENTITY, "supplierDTO", true);
     }
 
-        return this.supplierRepository.save(supplier);
+    return this.supplierRepository.save(supplier);
   }
 
   public Supplier updateSupplier(String id, SupplierDTO supplierDTO) {
