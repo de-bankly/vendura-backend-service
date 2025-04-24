@@ -44,7 +44,7 @@ public class UserService {
     this.userRepository
         .findUserByUsername(username)
         .ifPresent(
-            (user) -> {
+            _ -> {
               throw new EntityCreationException(
                   "Username " + username + " already exists", HttpStatus.CONFLICT, "User", true);
             });
@@ -130,10 +130,10 @@ public class UserService {
     if (userDTO.getEmail() != null) {
       user.setEmail(userDTO.getEmail());
     }
-    
-        if (userDTO.getPassword() != null) {
-        user.setPassword(this.passwordEncoder.encode(userDTO.getPassword()));
-        }
+
+    if (userDTO.getPassword() != null) {
+      user.setPassword(this.passwordEncoder.encode(userDTO.getPassword()));
+    }
 
     if (userDTO.getLocked() != null && user.isLocked() != userDTO.getLocked()) {
       user.setLocked(userDTO.getLocked());

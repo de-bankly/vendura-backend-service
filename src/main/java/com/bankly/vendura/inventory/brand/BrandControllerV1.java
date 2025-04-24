@@ -27,9 +27,9 @@ public class BrandControllerV1 {
   @GetMapping
   @PreAuthorize("hasRole('ADMIN')")
   @Cacheable(
-          value = "brandPage",
-          key =
-                  "'all?page=' + #pageable.getPageNumber() + ',size=' + #pageable.getPageSize() + ',sort=' + #pageable.getSort().toString()")
+      value = "brandPage",
+      key =
+          "'all?page=' + #pageable.getPageNumber() + ',size=' + #pageable.getPageSize() + ',sort=' + #pageable.getSort().toString()")
   public ResponseEntity<Page<BrandDTO>> getBrands(Pageable pageable) {
     return ResponseEntity.ok(this.brandRepository.findAll(pageable).map(BrandFactory::toDTO));
   }
@@ -57,10 +57,11 @@ public class BrandControllerV1 {
 
   @PutMapping("/{id}")
   @PreAuthorize("hasRole('ADMIN')")
-  @Caching(evict = {
-          @CacheEvict(value = "brandPage", allEntries = true),
-          @CacheEvict(value = "brand", key = "#id")
-  })
+  @Caching(
+      evict = {
+        @CacheEvict(value = "brandPage", allEntries = true),
+        @CacheEvict(value = "brand", key = "#id")
+      })
   public ResponseEntity<BrandDTO> updateBrand(
       @PathVariable("id") String id, @RequestBody BrandDTO brandDTO) {
     return ResponseEntity.ok(BrandFactory.toDTO(this.brandService.updateBrand(id, brandDTO)));
@@ -68,10 +69,11 @@ public class BrandControllerV1 {
 
   @DeleteMapping("/{id}")
   @PreAuthorize("hasRole('ADMIN')")
-  @Caching(evict = {
-          @CacheEvict(value = "brandPage", allEntries = true),
-          @CacheEvict(value = "brand", key = "#id")
-  })
+  @Caching(
+      evict = {
+        @CacheEvict(value = "brandPage", allEntries = true),
+        @CacheEvict(value = "brand", key = "#id")
+      })
   public ResponseEntity<?> deleteBrand(@PathVariable("id") String id) {
     this.brandService.deleteBrand(id);
     return ResponseEntity.noContent().build();

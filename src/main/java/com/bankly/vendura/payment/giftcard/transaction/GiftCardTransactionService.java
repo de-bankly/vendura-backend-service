@@ -43,8 +43,8 @@ public class GiftCardTransactionService {
       double amount,
       GiftcardTransactable transactionCause,
       User issuer,
-      String message, Integer usages) {
-
+      String message,
+      Integer usages) {
 
     if (giftCard.getType() == GiftCard.Type.GIFT_CARD && amount > 0) {
       double currentBalance = this.calculateRemainingBalance(giftCard);
@@ -73,7 +73,6 @@ public class GiftCardTransactionService {
 
     if (giftCard.getType() == GiftCard.Type.DISCOUNT_CARD) {
       giftCardTransaction.setUsage(usages == null ? (amount > 0 ? -1 : 1) : usages);
-
     }
 
     this.giftCardTransactionRepository.save(giftCardTransaction);

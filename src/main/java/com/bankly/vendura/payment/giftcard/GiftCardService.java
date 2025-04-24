@@ -56,7 +56,6 @@ public class GiftCardService {
     if (giftCard.getType() == GiftCard.Type.GIFT_CARD) {
       this.giftCardTransactionService.createTransaction(
           giftCard, giftCardDTO.getInitialBalance(), null, user, "Gift card created", null);
-
     }
 
     return giftCard;
@@ -107,17 +106,18 @@ public class GiftCardService {
       }
       User user = this.userService.findByUsername(authentication.getName()).orElseThrow();
       this.giftCardTransactionService.createTransaction(
-              giftCard, -remainingBalance, null, user, "Gift card deleted", null);
+          giftCard, -remainingBalance, null, user, "Gift card deleted", null);
     }
 
     if (giftCard.getType() == GiftCard.Type.DISCOUNT_CARD) {
-      int remainingUsages = giftCard.getMaximumUsages() - this.giftCardTransactionService.calculateUsages(giftCard);
+      int remainingUsages =
+          giftCard.getMaximumUsages() - this.giftCardTransactionService.calculateUsages(giftCard);
       if (remainingUsages == 0) {
         return giftCard;
       }
       User user = this.userService.findByUsername(authentication.getName()).orElseThrow();
       this.giftCardTransactionService.createTransaction(
-              giftCard, -remainingUsages, null, user, "Gift card deleted", remainingUsages);
+          giftCard, -remainingUsages, null, user, "Gift card deleted", remainingUsages);
     }
 
     return giftCard;
@@ -157,13 +157,14 @@ public class GiftCardService {
     GiftCardDTO giftCardDTO = GiftCardFactory.toDTO(giftCard);
 
     if (giftCard.getType() == GiftCard.Type.GIFT_CARD) {
-      giftCardDTO.setRemainingBalance(this.giftCardTransactionService.calculateRemainingBalance(giftCard));
+      giftCardDTO.setRemainingBalance(
+          this.giftCardTransactionService.calculateRemainingBalance(giftCard));
     }
 
     if (giftCard.getType() == GiftCard.Type.DISCOUNT_CARD) {
-      Integer i = giftCard.getMaximumUsages() - this.giftCardTransactionService.calculateUsages(giftCard);
-      System.out.println(i + " usages left");
-        giftCardDTO.setRemainingUsages(i);
+      Integer i =
+          giftCard.getMaximumUsages() - this.giftCardTransactionService.calculateUsages(giftCard);
+      giftCardDTO.setRemainingUsages(i);
     }
 
     return giftCardDTO;

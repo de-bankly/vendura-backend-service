@@ -31,9 +31,9 @@ public class RoleControllerV1 {
   @GetMapping
   @PreAuthorize("hasRole('ADMIN')")
   @Cacheable(
-          value = "rolePage",
-          key =
-                  "'all?page=' + #pageable.getPageNumber() + ',size=' + #pageable.getPageSize() + ',sort=' + #pageable.getSort().toString()")
+      value = "rolePage",
+      key =
+          "'all?page=' + #pageable.getPageNumber() + ',size=' + #pageable.getPageSize() + ',sort=' + #pageable.getSort().toString()")
   public ResponseEntity<?> getAllRoles(Pageable pageable) {
     return ResponseEntity.ok(this.roleRepository.findAll(pageable));
   }
@@ -62,7 +62,7 @@ public class RoleControllerV1 {
    * Creation of roles
    *
    * @param roleDTO role information for creation
-   * @return
+   * @return created role as DTO
    */
   @PostMapping
   @PreAuthorize("hasRole('ADMIN')")
@@ -73,20 +73,22 @@ public class RoleControllerV1 {
 
   @PutMapping("/{id}")
   @PreAuthorize("hasRole('ADMIN')")
-  @Caching(evict = {
-          @CacheEvict(value = "rolePage", allEntries = true),
-          @CacheEvict(value = "role", key = "#id")
-  })
+  @Caching(
+      evict = {
+        @CacheEvict(value = "rolePage", allEntries = true),
+        @CacheEvict(value = "role", key = "#id")
+      })
   public ResponseEntity<?> updateRole(@RequestBody RoleDTO roleDTO, @PathVariable("id") String id) {
     return ResponseEntity.ok(RoleDTO.fromRole(this.roleService.updateRole(id, roleDTO)));
   }
 
   @DeleteMapping("/{id}")
   @PreAuthorize("hasRole('ADMIN')")
-  @Caching(evict = {
-          @CacheEvict(value = "rolePage", allEntries = true),
-          @CacheEvict(value = "role", key = "#id")
-  })
+  @Caching(
+      evict = {
+        @CacheEvict(value = "rolePage", allEntries = true),
+        @CacheEvict(value = "role", key = "#id")
+      })
   public ResponseEntity<?> deactivateRole(@PathVariable("id") String id) {
     return ResponseEntity.ok(RoleDTO.fromRole(this.roleService.deactivateRole(id)));
   }

@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-public class  PaymentService {
+public class PaymentService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PaymentService.class);
 
@@ -46,10 +46,11 @@ public class  PaymentService {
         sale.getId(),
         payment.getGiftCard().getId(),
         remainingBalance);
-      if (payment.getGiftCard().getExpirationDate()!= null && payment.getGiftCard().getExpirationDate().before(new Date())) {
-        throw new IllegalArgumentException("Giftcard is expired!");
-      }
-      if (payment.getGiftCard().getType() == GiftCard.Type.DISCOUNT_CARD) {
+    if (payment.getGiftCard().getExpirationDate() != null
+        && payment.getGiftCard().getExpirationDate().before(new Date())) {
+      throw new IllegalArgumentException("Giftcard is expired!");
+    }
+    if (payment.getGiftCard().getType() == GiftCard.Type.DISCOUNT_CARD) {
       // round the following to two decimals
       double amount =
           Math.min(
@@ -75,7 +76,8 @@ public class  PaymentService {
           "Automatic charge on giftcard due to payment TX#"
               + payment.getId()
               + " on SALE#"
-              + sale.getId(), null);
+              + sale.getId(),
+          null);
     } catch (IllegalArgumentException e) {
       LOGGER.debug(
           "Transaction on gift card {} failed for payment {}",
@@ -96,11 +98,8 @@ public class  PaymentService {
             .toList();
 
     double remainingAmount = (double) Math.round(sale.calculateTotal() * 100) / 100;
-    System.out.println("remainingAmount: " + remainingAmount);
     for (Payment payment : sortedPayments) {
-      System.out.println("Remaining amount is " + remainingAmount);
       if (remainingAmount <= 0) {
-        System.out.println("remainingAmount <= 0");
         sale.getPayments().remove(payment);
         this.paymentRepository.delete(payment);
       }
@@ -144,17 +143,13 @@ public class  PaymentService {
         }
       }
 
-
       if (transactionSuccess) {
-        System.out.println("Payment succeeded: " + payment.getAmount());
         remainingAmount = (double) Math.round((remainingAmount - payment.getAmount()) * 100) / 100;
         payment.setStatus(Payment.Status.COMPLETED);
         this.paymentRepository.save(payment);
       }
-
     }
 
-    System.out.println("Remaining at the end of all payments: " + remainingAmount);
     if (remainingAmount != 0) {
       revertAllTransactionsAndCancelSale(sale);
       throw new IllegalArgumentException(
@@ -179,7 +174,6 @@ public class  PaymentService {
               + " €; expected at least "
               + payment.getAmount()
               + " €");
-
     }
 
     payment.setReturned(payment.getHanded() - payment.getAmount());
@@ -212,8 +206,8 @@ public class  PaymentService {
           giftCardPayment,
           payment.getIssuer(),
           "Revert transaction on giftcard due to a fail of fulfilling payment TX#"
-              + payment.getId(), null);
-
+              + payment.getId(),
+          null);
     }
 
     this.paymentRepository.save(payment);

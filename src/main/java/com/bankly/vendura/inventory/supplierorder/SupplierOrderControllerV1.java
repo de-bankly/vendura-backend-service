@@ -5,6 +5,8 @@ import com.bankly.vendura.inventory.supplierorder.model.SupplierOrderDTO;
 import com.bankly.vendura.inventory.supplierorder.model.SupplierOrderFactory;
 import com.bankly.vendura.inventory.supplierorder.model.SupplierOrderRepository;
 import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -14,9 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/v1/supplierorder")
@@ -38,30 +37,37 @@ public class SupplierOrderControllerV1 {
   public ResponseEntity<Page<SupplierOrderDTO>> getSupplierOrdersByStatus(
       @PathVariable("status") String status, Pageable pageable) {
     try {
-      SupplierOrder.OrderStatus orderStatus = SupplierOrder.OrderStatus.valueOf(status.toUpperCase());
+      SupplierOrder.OrderStatus orderStatus =
+          SupplierOrder.OrderStatus.valueOf(status.toUpperCase());
       return ResponseEntity.ok(
-          this.supplierOrderService.getSupplierOrdersByStatus(orderStatus, pageable).map(SupplierOrderFactory::toDTO));
+          this.supplierOrderService
+              .getSupplierOrdersByStatus(orderStatus, pageable)
+              .map(SupplierOrderFactory::toDTO));
     } catch (IllegalArgumentException e) {
       throw new EntityRetrieveException("Invalid order status", HttpStatus.BAD_REQUEST, status);
     }
   }
-  
+
   @GetMapping("/supplier/{supplierId}")
   @PreAuthorize("hasRole('INVENTORY')")
   public ResponseEntity<Page<SupplierOrderDTO>> getSupplierOrdersBySupplierId(
       @PathVariable("supplierId") String supplierId, Pageable pageable) {
     return ResponseEntity.ok(
-        this.supplierOrderService.getSupplierOrdersBySupplierId(supplierId, pageable).map(SupplierOrderFactory::toDTO));
+        this.supplierOrderService
+            .getSupplierOrdersBySupplierId(supplierId, pageable)
+            .map(SupplierOrderFactory::toDTO));
   }
-  
+
   @GetMapping("/automatic/{isAutomatic}")
   @PreAuthorize("hasRole('INVENTORY')")
   public ResponseEntity<Page<SupplierOrderDTO>> getAutomaticSupplierOrders(
       @PathVariable("isAutomatic") boolean isAutomatic, Pageable pageable) {
     return ResponseEntity.ok(
-        this.supplierOrderService.getAutomaticSupplierOrders(isAutomatic, pageable).map(SupplierOrderFactory::toDTO));
+        this.supplierOrderService
+            .getAutomaticSupplierOrders(isAutomatic, pageable)
+            .map(SupplierOrderFactory::toDTO));
   }
-  
+
   @GetMapping("/pending")
   @PreAuthorize("hasRole('INVENTORY')")
   public ResponseEntity<List<SupplierOrderDTO>> getPendingSupplierOrders() {

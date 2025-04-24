@@ -29,10 +29,6 @@ public class Sale implements ProductTransactable {
   @DBRef private Set<DepositReceipt> depositReceipts = new HashSet<>();
 
   public double calculateTotal() {
-    System.out.println(this.id + " calculating total");
-    System.out.println("Deposit receipts: "
-            + this.depositReceipts.stream().mapToDouble(DepositReceipt::calculateTotal).sum());
-    System.out.println("Positions: " + this.positions.stream().mapToDouble(Position::getPositionTotal).sum());
     return this.positions.stream().mapToDouble(Position::getPositionTotal).sum()
         - this.depositReceipts.stream().mapToDouble(DepositReceipt::calculateTotal).sum();
   }
@@ -67,8 +63,8 @@ public class Sale implements ProductTransactable {
 
   public static class SaleBuilder {
     private Sale sale = new Sale();
-    private SaleBuilder() {
-    }
+
+    private SaleBuilder() {}
 
     public Sale build() {
       return sale;
@@ -88,7 +84,6 @@ public class Sale implements ProductTransactable {
       this.sale.setCashier(cashier);
       return this;
     }
-
   }
 
   @Getter
@@ -98,8 +93,7 @@ public class Sale implements ProductTransactable {
     private int quantity;
     private Set<Position> connectedPositions = new HashSet<>();
 
-    @Setter
-    private double discountEuro;
+    @Setter private double discountEuro;
 
     public Position(Product product, int quantity, double discountEuro) {
       this.setProduct(product);
@@ -118,7 +112,7 @@ public class Sale implements ProductTransactable {
       this.product = product;
       this.connectedPositions =
           product.getConnectedProducts().stream()
-                  .map(
+              .map(
                   connectedProduct -> {
                     Position connectedPosition = new Position();
                     connectedPosition.setProduct(connectedProduct);
@@ -142,10 +136,10 @@ public class Sale implements ProductTransactable {
 
     public long getTotalQuantity() {
       long myQuantity = this.quantity;
-        for (Position connectedPosition : this.connectedPositions) {
-            myQuantity += connectedPosition.getTotalQuantity();
-        }
-        return myQuantity;
+      for (Position connectedPosition : this.connectedPositions) {
+        myQuantity += connectedPosition.getTotalQuantity();
+      }
+      return myQuantity;
     }
   }
 }

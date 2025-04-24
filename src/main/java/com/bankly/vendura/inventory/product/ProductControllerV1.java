@@ -5,12 +5,10 @@ import com.bankly.vendura.inventory.product.model.ProductFactory;
 import com.bankly.vendura.inventory.product.model.ProductRepository;
 import com.bankly.vendura.inventory.supplier.model.SupplierRepository;
 import com.bankly.vendura.inventory.transactions.product.ProductTransactionService;
-import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +31,7 @@ public class ProductControllerV1 {
       Pageable pageable,
       @RequestParam(required = false, name = "calculateStock", defaultValue = "false")
           boolean calculateStock) {
-    
+
     return ResponseEntity.ok(this.productService.getProducts(pageable, calculateStock));
   }
 

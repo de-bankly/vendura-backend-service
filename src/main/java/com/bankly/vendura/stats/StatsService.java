@@ -137,7 +137,6 @@ public class StatsService {
         new Date(System.currentTimeMillis() - (period.getDays()) * 24 * 60 * 60 * 1000L);
     Date periodEndDate = new Date();
 
-    System.out.println(periodStartDate + " " + periodEndDate + " " + limit);
 
     Aggregation aggregation =
         Aggregation.newAggregation(
@@ -187,9 +186,6 @@ public class StatsService {
     List<Product> products = this.productRepository.findAllById(productIds);
 
     Map<ProductDTO, Integer> productMap = new HashMap<>();
-    System.out.println(products.size());
-    System.out.println(result.getMappedResults().size());
-    System.out.println(Arrays.toString(productIds.toArray()));
     for (int i = 0; i < productIds.size(); i++) {
       productMap.put(ProductFactory.toDTO(products.get(i)), result.getMappedResults().get(i).getInteger("totalQuantity"));
     }

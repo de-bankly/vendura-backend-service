@@ -3,14 +3,13 @@ package com.bankly.vendura.sale.model;
 import com.bankly.vendura.deposit.model.DepositReceiptDTO;
 import com.bankly.vendura.inventory.product.model.ProductDTO;
 import com.bankly.vendura.payment.model.PaymentDTO;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -41,7 +40,6 @@ public class SaleDTO {
     public static PositionDTOBuilder builder() {
       return new PositionDTO().toBuilder();
     }
-
   }
 
   public static SaleDTOBuilder builder() {
@@ -94,5 +92,4 @@ public class SaleDTO {
       return this.instance;
     }
   }
-
 }

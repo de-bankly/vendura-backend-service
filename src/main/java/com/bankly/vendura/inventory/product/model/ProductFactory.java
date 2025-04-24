@@ -3,8 +3,6 @@ package com.bankly.vendura.inventory.product.model;
 import com.bankly.vendura.inventory.brand.model.BrandFactory;
 import com.bankly.vendura.inventory.productcategory.model.ProductCategoryFactory;
 import com.bankly.vendura.inventory.supplier.model.SupplierFactory;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.stream.Collectors;
 
 public class ProductFactory {
@@ -30,11 +28,13 @@ public class ProductFactory {
             .map(ProductFactory::toDTO)
             .collect(Collectors.toSet()));
     productDTO.setStandalone(product.isStandalone());
-    
+
     // Transform priceHistories if available
     if (product.getPriceHistories() != null) {
       productDTO.setPriceHistories(
-          product.getPriceHistories().stream().map(ProductFactory::toDTO).collect(Collectors.toList()));
+          product.getPriceHistories().stream()
+              .map(ProductFactory::toDTO)
+              .collect(Collectors.toList()));
     }
 
     return productDTO;
@@ -56,20 +56,22 @@ public class ProductFactory {
     product.setReorderPoint(productDTO.getReorderPoint());
     product.setReorderQuantity(productDTO.getReorderQuantity());
     product.setLeadTimeInDays(productDTO.getLeadTimeInDays());
-    
+
     if (productDTO.getConnectedProducts() != null) {
       product.setConnectedProducts(
           productDTO.getConnectedProducts().stream()
               .map(ProductFactory::toEntity)
               .collect(Collectors.toSet()));
     }
-    
+
     product.setStandalone(productDTO.getStandalone() != null ? productDTO.getStandalone() : true);
-    
+
     // Transform priceHistories if available
     if (productDTO.getPriceHistories() != null) {
       product.setPriceHistories(
-          productDTO.getPriceHistories().stream().map(ProductFactory::toEntity).collect(Collectors.toList()));
+          productDTO.getPriceHistories().stream()
+              .map(ProductFactory::toEntity)
+              .collect(Collectors.toList()));
     }
 
     return product;

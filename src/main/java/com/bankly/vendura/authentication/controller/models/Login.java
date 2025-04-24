@@ -1,10 +1,9 @@
 package com.bankly.vendura.authentication.controller.models;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 public class Login {
 

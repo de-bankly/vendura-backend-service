@@ -7,15 +7,14 @@ import com.bankly.vendura.deposit.model.DepositReceiptRepository;
 import com.bankly.vendura.inventory.product.ProductService;
 import com.bankly.vendura.inventory.product.model.Product;
 import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -39,7 +38,6 @@ public class DepositService {
   public DepositReceipt createDepositReceipt(DepositReceiptDTO depositReceiptDTO) {
     DepositReceipt depositReceipt = DepositReceiptFactory.toEntity(depositReceiptDTO);
     for (DepositReceipt.Position position : depositReceipt.getPositions()) {
-      System.out.println("A" + position.getProduct().getId());
       position.setProduct(this.productService.getProductEntityById(position.getProduct().getId()));
     }
     depositReceipt.setId(generateId());

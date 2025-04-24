@@ -7,6 +7,5 @@
  * UserDetailsService.
  *
  * @author Anton Bowe
- *
  */
 package com.bankly.vendura.authentication;

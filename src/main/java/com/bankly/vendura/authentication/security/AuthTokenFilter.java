@@ -6,6 +6,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +47,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
    */
   @Override
   protected void doFilterInternal(
-      HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+      HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
       throws ServletException, IOException {
 
     // This filter will ignore all requests on /v1/authentication and /error, because authentication
@@ -54,9 +56,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         || request.getRequestURI().equalsIgnoreCase("/error")
         || request.getRequestURI().startsWith("/public/")
         || request.getRequestURI().startsWith("/swagger-ui/")
-        || request.getRequestURI().equalsIgnoreCase("/favicon.ico")
+        || request.getRequestURI().equalsIgnoreCase("/favicon.ico")) {
 
-    ) {
       filterChain.doFilter(request, response); // further processing of the filter chain
       return;
     }

@@ -27,9 +27,9 @@ public class SupplierControllerV1 {
   @GetMapping
   @PreAuthorize("hasRole('INVENTORY')")
   @Cacheable(
-          value = "supplierPage",
-          key =
-                  "'all?page=' + #pageable.getPageNumber() + ',size=' + #pageable.getPageSize() + ',sort=' + #pageable.getSort().toString()")
+      value = "supplierPage",
+      key =
+          "'all?page=' + #pageable.getPageNumber() + ',size=' + #pageable.getPageSize() + ',sort=' + #pageable.getSort().toString()")
   public ResponseEntity<Page<SupplierDTO>> getSuppliers(Pageable pageable) {
     return ResponseEntity.ok(this.supplierRepository.findAll(pageable).map(SupplierFactory::toDTO));
   }
@@ -56,10 +56,11 @@ public class SupplierControllerV1 {
 
   @PutMapping("/{id}")
   @PreAuthorize("hasRole('INVENTORY')")
-  @Caching(evict = {
-          @CacheEvict(value = "supplierPage", allEntries = true),
-          @CacheEvict(value = "supplier", key = "#id")
-  })
+  @Caching(
+      evict = {
+        @CacheEvict(value = "supplierPage", allEntries = true),
+        @CacheEvict(value = "supplier", key = "#id")
+      })
   public ResponseEntity<SupplierDTO> updateSupplier(
       @PathVariable("id") String id, @RequestBody SupplierDTO supplierDTO) {
     return ResponseEntity.ok(
@@ -68,10 +69,11 @@ public class SupplierControllerV1 {
 
   @DeleteMapping("/{id}")
   @PreAuthorize("hasRole('INVENTORY')")
-  @Caching(evict = {
-          @CacheEvict(value = "supplierPage", allEntries = true),
-          @CacheEvict(value = "supplier", key = "#id")
-  })
+  @Caching(
+      evict = {
+        @CacheEvict(value = "supplierPage", allEntries = true),
+        @CacheEvict(value = "supplier", key = "#id")
+      })
   public ResponseEntity<?> deleteSupplier(@PathVariable("id") String id) {
     this.supplierRepository.deleteById(id);
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
