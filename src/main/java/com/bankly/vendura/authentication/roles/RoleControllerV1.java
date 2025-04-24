@@ -5,6 +5,9 @@ import com.bankly.vendura.authentication.roles.model.RoleRepository;
 import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +30,10 @@ public class RoleControllerV1 {
    */
   @GetMapping
   @PreAuthorize("hasRole('ADMIN')")
+  @Cacheable(
+          value = "rolePage",
+          key =
+                  "'all?page=' + #pageable.getPageNumber() + ',size=' + #pageable.getPageSize() + ',sort=' + #pageable.getSort().toString()")
   public ResponseEntity<?> getAllRoles(Pageable pageable) {
     return ResponseEntity.ok(this.roleRepository.findAll(pageable));
   }
@@ -39,6 +46,7 @@ public class RoleControllerV1 {
    */
   @GetMapping("/{id}")
   @PreAuthorize("hasRole('ADMIN')")
+  @Cacheable(value = "role", key = "#id")
   public ResponseEntity<?> getRole(@PathVariable("id") String id) {
     return ResponseEntity.ok(
         RoleDTO.fromRole(
@@ -58,18 +66,27 @@ public class RoleControllerV1 {
    */
   @PostMapping
   @PreAuthorize("hasRole('ADMIN')")
+  @Caching(evict = {@CacheEvict(value = "rolePage", allEntries = true)})
   public ResponseEntity<?> createRole(@RequestBody RoleDTO roleDTO) {
     return ResponseEntity.ok(RoleDTO.fromRole(this.roleService.createRole(roleDTO)));
   }
 
   @PutMapping("/{id}")
   @PreAuthorize("hasRole('ADMIN')")
+  @Caching(evict = {
+          @CacheEvict(value = "rolePage", allEntries = true),
+          @CacheEvict(value = "role", key = "#id")
+  })
   public ResponseEntity<?> updateRole(@RequestBody RoleDTO roleDTO, @PathVariable("id") String id) {
     return ResponseEntity.ok(RoleDTO.fromRole(this.roleService.updateRole(id, roleDTO)));
   }
 
   @DeleteMapping("/{id}")
   @PreAuthorize("hasRole('ADMIN')")
+  @Caching(evict = {
+          @CacheEvict(value = "rolePage", allEntries = true),
+          @CacheEvict(value = "role", key = "#id")
+  })
   public ResponseEntity<?> deactivateRole(@PathVariable("id") String id) {
     return ResponseEntity.ok(RoleDTO.fromRole(this.roleService.deactivateRole(id)));
   }

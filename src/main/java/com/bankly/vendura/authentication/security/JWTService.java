@@ -1,5 +1,7 @@
 package com.bankly.vendura.authentication.security;
 
+import com.bankly.vendura.authentication.roles.model.Role;
+import com.bankly.vendura.authentication.user.model.User;
 import com.bankly.vendura.utilities.exceptions.CustomAuthenticationException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -7,7 +9,6 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import java.security.Key;
 import java.util.*;
-import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -16,9 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 /**
@@ -55,24 +53,69 @@ public class JWTService {
   /**
    * Generates a JWT token for the provided user details.
    *
-   * @param userDetails the user details to include in the JWT
+   * @param user the user details to include in the JWT
    * @return the generated JWT token
    */
-  public String generateToken(UserDetails userDetails) {
-
+  public String generateToken(User user) {
     final Map<String, Object> claims = new HashMap<>();
-    List<String> roles =
-        userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+
+    claims.put("userId", user.getId());
+
+    Set<Role> roles = user.getRoles();
 
     claims.put("roles", roles);
 
+    claims.put("enabled", user.isEnabled());
+    claims.put("locked", user.isLocked());
+
+    claims.put("firstname", user.getFirstName());
+    claims.put("lastname", user.getLastName());
+    claims.put("email", user.getEmail());
+
     return Jwts.builder()
         .claims(claims)
-        .subject(userDetails.getUsername())
+        .subject(user.getUsername())
         .issuedAt(new Date())
         .expiration(new Date(System.currentTimeMillis() + this.jwtExpiration))
         .signWith(key())
         .compact();
+  }
+
+  public User extractUserFromJWTOffline(String token) {
+    LOGGER.debug("Extracting user from JWT: {}", token);
+
+    Claims claims =
+        Jwts.parser().verifyWith((SecretKey) key()).build().parseSignedClaims(token).getPayload();
+
+    String userId = claims.get("userId", String.class);
+    LOGGER.debug("User ID: {}", userId);
+
+    String username = claims.getSubject();
+    LOGGER.debug("Username: {}", username);
+
+    String firstname = claims.get("firstname", String.class);
+    String lastname = claims.get("lastname", String.class);
+    String email = claims.get("email", String.class);
+
+    List<Map<String, Object>> rolesData = claims.get("roles", List.class);
+    LOGGER.debug("Roles Data: {}", rolesData);
+
+    Set<Role> roles = new HashSet<>();
+
+    if (rolesData != null) {
+      for (Map<String, Object> rolesDatum : rolesData) {
+        Role role = new Role();
+        role.setId((String) rolesDatum.get("id"));
+        role.setName((String) rolesDatum.get("name"));
+        role.setActive((Boolean) rolesDatum.get("active"));
+        roles.add(role);
+      }
+    }
+
+    boolean enabled = claims.get("enabled", Boolean.class);
+    boolean locked = claims.get("locked", Boolean.class);
+
+    return new User(userId, username, null, firstname, lastname, email, roles, enabled, locked);
   }
 
   /**
@@ -131,20 +174,8 @@ public class JWTService {
               + exception.getClass().getSimpleName()
               + ", Message: "
               + exception.getMessage(),
-          exception, HttpStatus.INTERNAL_SERVER_ERROR);
+          exception,
+          HttpStatus.INTERNAL_SERVER_ERROR);
     }
-  }
-
-  public List<SimpleGrantedAuthority> getAuthoritiesFromToken(String token) {
-    Claims claims =
-        Jwts.parser().verifyWith((SecretKey) key()).build().parseSignedClaims(token).getPayload();
-
-    List<String> roles = claims.get("roles", List.class);
-
-    if (roles == null) {
-      return Collections.emptyList();
-    }
-
-    return roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
   }
 }

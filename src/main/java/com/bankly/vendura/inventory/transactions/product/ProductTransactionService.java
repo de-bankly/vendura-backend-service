@@ -5,10 +5,12 @@ import com.bankly.vendura.inventory.product.model.Product;
 import com.bankly.vendura.inventory.transactions.product.model.ProductTransactable;
 import com.bankly.vendura.inventory.transactions.product.model.ProductTransaction;
 import com.bankly.vendura.inventory.transactions.product.model.ProductTransactionRepository;
-import com.bankly.vendura.inventory.transactions.product.model.StockAggregationResult;
+import com.bankly.vendura.sale.model.Sale;
 import java.util.Date;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -32,7 +34,8 @@ public class ProductTransactionService {
             .product(product)
             .quantity(quantity)
             .transactionCause(transactionCause)
-            .transactionType(transactionCause.getTransactionType())
+            .transactionType(transactionCause != null ? transactionCause.getTransactionType() : 
+                quantity > 0 ? ProductTransaction.TransactionType.WAREHOUSE_IN : ProductTransaction.TransactionType.WAREHOUSE_OUT)
             .issuer(issuer)
             .message(message)
             .timestamp(new Date())
@@ -57,4 +60,36 @@ public class ProductTransactionService {
 
     return result == null ? 0 : result.getQuantity();
   }
+  
+  /**
+   * Find all transactions for a product
+   * @param productId The product ID
+   * @param pageable Pagination parameters
+   * @return Page of transactions
+   */
+  public Page<ProductTransaction> findTransactionsByProductId(String productId, Pageable pageable) {
+    return productTransactionRepository.findByProductIdOrderByTimestampDesc(productId, pageable);
+  }
+  
+  /**
+   * Find all transactions in the system
+   * @param pageable Pagination parameters
+   * @return Page of transactions
+   */
+  public Page<ProductTransaction> findAllTransactions(Pageable pageable) {
+    return productTransactionRepository.findAllByOrderByTimestampDesc(pageable);
+  }
+
+    public void handleSale(Sale sale) {
+      for (Sale.Position position : sale.getAllAccumulatedPositions()) {
+      System.out.println("Processing position: " + position);
+      System.out.println(position.getProduct());
+        if (!position.getProduct().isStandalone()) {
+          if (this.calculateCurrentStock(position.getProduct()) < position.getQuantity()) {
+            throw new IllegalArgumentException("Insufficient stock for product: " + position.getProduct().getName());
+          }
+          this.createTransaction(position.getProduct(), -position.getQuantity(), sale, sale.getCashier(), "Sale transaction");
+        }
+      }
+    }
 }

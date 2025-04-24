@@ -9,8 +9,11 @@ public class GiftCardFactory {
         null,
         giftCardDTO.getIssueDate(),
         giftCardDTO.getExpirationDate(),
-        giftCardDTO.getInitialBalance(),
-        giftCardDTO.getIssuerId() != null ? new User("") : null);
+        giftCardDTO.getInitialBalance() == null ? 0 : giftCardDTO.getInitialBalance(),
+        giftCardDTO.getIssuerId() != null ? new User(giftCardDTO.getIssuerId()) : null,
+        giftCardDTO.getDiscountPercentage() == null ? 0 : giftCardDTO.getDiscountPercentage(),
+        giftCardDTO.getMaximumUsages() == null ? 0 : giftCardDTO.getMaximumUsages(),
+        giftCardDTO.getType() != null ? giftCardDTO.getType().toEntityType() : null);
   }
 
   public static GiftCardDTO toDTO(GiftCard giftCard) {
@@ -20,6 +23,9 @@ public class GiftCardFactory {
         giftCard.getExpirationDate(),
         giftCard.getInitialBalance(),
         giftCard.getIssuer() != null ? giftCard.getIssuer().getId() : null,
-        null);
+        giftCard.getDiscountPercentage() == 0 ? null : giftCard.getDiscountPercentage(),
+        giftCard.getMaximumUsages() == 0 ? null : giftCard.getMaximumUsages(),
+        giftCard.getType() != null ? giftCard.getType().toDTOType() : null,
+        null, null);
   }
 }

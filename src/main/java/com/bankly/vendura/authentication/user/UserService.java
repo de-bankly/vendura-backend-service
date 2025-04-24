@@ -2,7 +2,6 @@ package com.bankly.vendura.authentication.user;
 
 import com.bankly.vendura.authentication.controller.models.Login;
 import com.bankly.vendura.authentication.roles.model.Role;
-import com.bankly.vendura.authentication.roles.model.RoleDTO;
 import com.bankly.vendura.authentication.roles.model.RoleRepository;
 import com.bankly.vendura.authentication.security.JWTService;
 import com.bankly.vendura.authentication.user.model.User;
@@ -11,7 +10,7 @@ import com.bankly.vendura.authentication.user.model.UserRepository;
 import com.bankly.vendura.utilities.exceptions.EntityCreationException;
 import com.bankly.vendura.utilities.exceptions.EntityRetrieveException;
 import com.bankly.vendura.utilities.exceptions.EntityUpdateException;
-import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,20 +43,25 @@ public class UserService {
 
     this.userRepository
         .findUserByUsername(username)
-        .orElseThrow(
-            () ->
-                new EntityCreationException(
-                    "Username " + username + " already exists", HttpStatus.CONFLICT, "User", true));
+        .ifPresent(
+            (user) -> {
+              throw new EntityCreationException(
+                  "Username " + username + " already exists", HttpStatus.CONFLICT, "User", true);
+            });
 
     User user = new User();
     user.setUsername(username);
     user.setPassword(this.passwordEncoder.encode(passwordPlain));
 
+    // Set additional user information if provided
+    user.setFirstName(userDTO.getFirstName());
+    user.setLastName(userDTO.getLastName());
+    user.setEmail(userDTO.getEmail());
+
     user.setEnabled(userDTO.getEnabled() == null || userDTO.getEnabled());
     user.setLocked(userDTO.getLocked() == null || userDTO.getLocked());
 
-    Set<String> roleIds =
-        userDTO.getRoles().stream().map(RoleDTO::getId).collect(Collectors.toSet());
+    Set<String> roleIds = userDTO.getRoles();
 
     for (String roleId : roleIds) {
       Role role =
@@ -115,6 +118,23 @@ public class UserService {
       user.setUsername(userDTO.getUsername());
     }
 
+    // Update user information if provided
+    if (userDTO.getFirstName() != null) {
+      user.setFirstName(userDTO.getFirstName());
+    }
+
+    if (userDTO.getLastName() != null) {
+      user.setLastName(userDTO.getLastName());
+    }
+
+    if (userDTO.getEmail() != null) {
+      user.setEmail(userDTO.getEmail());
+    }
+    
+        if (userDTO.getPassword() != null) {
+        user.setPassword(this.passwordEncoder.encode(userDTO.getPassword()));
+        }
+
     if (userDTO.getLocked() != null && user.isLocked() != userDTO.getLocked()) {
       user.setLocked(userDTO.getLocked());
     }
@@ -127,14 +147,14 @@ public class UserService {
       Set<Role> roles =
           userDTO.getRoles().stream()
               .map(
-                  roleDTO ->
+                  roleId ->
                       this.roleRepository
-                          .findById(roleDTO.getId())
+                          .findById(roleId)
                           .orElseThrow(
                               () ->
                                   new EntityUpdateException(
                                       "Cannot update roles because role with ID "
-                                          + roleDTO.getId()
+                                          + roleId
                                           + " not found",
                                       HttpStatus.NOT_FOUND,
                                       "roles")))
@@ -151,12 +171,23 @@ public class UserService {
             new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
 
     SecurityContextHolder.getContext().setAuthentication(authentication);
-    UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+    User user = (User) authentication.getPrincipal();
 
-    String jwtToken = this.jwtService.generateToken(userDetails);
-    List<String> roles =
-        userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+    String jwtToken = this.jwtService.generateToken(user);
 
-    return new Login.Response(jwtToken, userDetails.getUsername(), roles);
+    return new Login.Response(
+        jwtToken,
+        user.getUsername(),
+        user.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .collect(Collectors.toList()));
+  }
+
+  public Optional<User> findByUsername(String username) {
+    return this.userRepository.findUserByUsername(username);
+  }
+
+  public Optional<User> findById(String id) {
+    return this.userRepository.findById(id);
   }
 }

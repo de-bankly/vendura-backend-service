@@ -9,16 +9,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RoleDTO {
 
-    private String id;
-    private String name;
-    private Boolean active;
+  private String id;
+  private String name;
+  private Boolean active;
 
-    public Role toRole() {
-        return new Role(id, name, active == null || active);
-    }
+  public Role toRole() {
+    return new Role(id, name, active == null || active);
+  }
 
-    public static RoleDTO fromRole(Role role) {
-        return new RoleDTO(role.getId(), role.getName(), role.isActive());
-    }
-
+  public static RoleDTO fromRole(Role role) {
+    return new RoleDTO(role.getId(), role.getName(), role.isActive());
+  }
 }

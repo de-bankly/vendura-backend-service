@@ -43,7 +43,25 @@ public class GiftCardTransactionService {
       double amount,
       GiftcardTransactable transactionCause,
       User issuer,
-      String message) {
+      String message, Integer usages) {
+
+
+    if (giftCard.getType() == GiftCard.Type.GIFT_CARD && amount > 0) {
+      double currentBalance = this.calculateRemainingBalance(giftCard);
+      if (currentBalance + amount < 0) {
+        throw new IllegalArgumentException(
+            "Insufficient balance for this transaction, current balance is " + currentBalance);
+      }
+    }
+
+    if (giftCard.getType() == GiftCard.Type.DISCOUNT_CARD && amount > 0) {
+      double remainingUsages = giftCard.getMaximumUsages() - this.calculateUsages(giftCard);
+      if (remainingUsages <= 0) {
+        throw new IllegalArgumentException(
+            "No remaining usages for this transaction, remaining usages are " + remainingUsages);
+      }
+    }
+
     GiftCardTransaction giftCardTransaction =
         GiftCardTransaction.builder()
             .giftCard(giftCard)
@@ -52,6 +70,30 @@ public class GiftCardTransactionService {
             .issuer(issuer)
             .message(message)
             .build();
+
+    if (giftCard.getType() == GiftCard.Type.DISCOUNT_CARD) {
+      giftCardTransaction.setUsage(usages == null ? (amount > 0 ? -1 : 1) : usages);
+
+    }
+
     this.giftCardTransactionRepository.save(giftCardTransaction);
+  }
+
+  public Integer calculateUsages(GiftCard giftCard) {
+    return this.calculateUsages(giftCard.getId());
+  }
+
+  private Integer calculateUsages(String giftCardId) {
+    Aggregation aggregation =
+        Aggregation.newAggregation(
+            Aggregation.match(Criteria.where("giftCard").is(new DBRef("giftcards", giftCardId))),
+            Aggregation.group("giftCard._id").sum("usage").as("usage"));
+
+    GiftCardTransaction result =
+        this.mongoTemplate
+            .aggregate(aggregation, GiftCardTransaction.class, GiftCardTransaction.class)
+            .getUniqueMappedResult();
+
+    return result == null ? 0 : result.getUsage();
   }
 }

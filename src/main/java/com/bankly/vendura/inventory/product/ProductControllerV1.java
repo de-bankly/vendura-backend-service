@@ -29,8 +29,12 @@ public class ProductControllerV1 {
 
   @GetMapping
   @PreAuthorize("hasRole('POS')")
-  public ResponseEntity<Page<ProductDTO>> getProducts(Pageable pageable) {
-    return ResponseEntity.ok(this.productRepository.findAll(pageable).map(ProductFactory::toDTO));
+  public ResponseEntity<Page<ProductDTO>> getProducts(
+      Pageable pageable,
+      @RequestParam(required = false, name = "calculateStock", defaultValue = "false")
+          boolean calculateStock) {
+    
+    return ResponseEntity.ok(this.productService.getProducts(pageable, calculateStock));
   }
 
   @GetMapping("/{id}")
@@ -40,20 +44,7 @@ public class ProductControllerV1 {
       @RequestParam(required = false, name = "calculateStock", defaultValue = "false")
           boolean calculateStock) {
 
-    ProductDTO productDTO =
-        ProductFactory.toDTO(
-            this.productRepository
-                .findById(id)
-                .orElseThrow(
-                    () ->
-                        new EntityRetrieveException(
-                            "Product not found", HttpStatus.NOT_FOUND, id)));
-
-    if (calculateStock) {
-      productDTO.setCurrentStock(productTransactionService.calculateCurrentStock(id));
-    }
-
-    return ResponseEntity.ok(productDTO);
+    return ResponseEntity.ok(this.productService.getProductById(id, calculateStock));
   }
 
   @PostMapping
