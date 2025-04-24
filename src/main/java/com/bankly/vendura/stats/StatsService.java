@@ -157,18 +157,25 @@ public class StatsService {
             Aggregation.limit(limit),
             Aggregation.lookup("products", "$_id", "$id", "product") // productId, totalQuantity
             /*Aggregation.addFields()
-                .addFieldWithValue(
-                    "productObjectId", ConvertOperators.ToObjectId.toObjectId("$_id"))
-                .build(),*/
+            .addFieldWithValue(
+                "productObjectId", ConvertOperators.ToObjectId.toObjectId("$_id"))
+            .build(),*/
             );
 
     AggregationResults<Document> result =
         this.mongoTemplate.aggregate(aggregation, "sales", Document.class);
 
-    Map<String, Integer> productMap = result.getMappedResults().stream().collect(Collectors.toMap(k -> k.get("_id").toString(), k -> k.getInteger("totalQuantity")));
-    List<ProductDTO> bulk = this.productRepository.findAllById(productMap.keySet()).stream().map(ProductFactory::toDTO).toList();
+    Map<String, Integer> productMap =
+        result.getMappedResults().stream()
+            .collect(
+                Collectors.toMap(k -> k.get("_id").toString(), k -> k.getInteger("totalQuantity")));
+    List<ProductDTO> bulk =
+        this.productRepository.findAllById(productMap.keySet()).stream()
+            .map(ProductFactory::toDTO)
+            .toList();
 
-    TopSellingProductsDTO topSellingProductsDTO = TopSellingProductsDTO.builder()
+    TopSellingProductsDTO topSellingProductsDTO =
+        TopSellingProductsDTO.builder()
             .limit(limit)
             .topSellingProducts(productMap)
             .bulkFetchProducts(bulk)
