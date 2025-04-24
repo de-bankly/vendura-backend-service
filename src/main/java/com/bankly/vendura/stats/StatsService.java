@@ -7,18 +7,17 @@ import com.bankly.vendura.inventory.product.model.ProductRepository;
 import com.bankly.vendura.payment.model.*;
 import com.bankly.vendura.sale.model.Sale;
 import com.bankly.vendura.sale.model.SaleRepository;
+import com.bankly.vendura.sale.model.TopSellingProductsDTO;
 import com.bankly.vendura.stats.model.SummaryDTO;
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.bson.Document;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.aggregation.ConvertOperators;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
 
@@ -133,7 +132,7 @@ public class StatsService {
                 e -> e.getKey().getId(), Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
   }
 
-  public Map<String, Integer> getProductsTopSelling(SummaryDTO.Period period, int limit) {
+  public TopSellingProductsDTO getProductsTopSelling(SummaryDTO.Period period, int limit) {
     Date periodStartDate =
         new Date(System.currentTimeMillis() - (period.getDays()) * 24 * 60 * 60 * 1000L);
     Date periodEndDate = new Date();
@@ -166,7 +165,16 @@ public class StatsService {
     AggregationResults<Document> result =
         this.mongoTemplate.aggregate(aggregation, "sales", Document.class);
 
-    return result.getMappedResults().stream().collect(Collectors.toMap(k -> k.get("_id").toString(), k -> k.getInteger("totalQuantity")));
+    Map<String, Integer> productMap = result.getMappedResults().stream().collect(Collectors.toMap(k -> k.get("_id").toString(), k -> k.getInteger("totalQuantity")));
+    List<ProductDTO> bulk = this.productRepository.findAllById(productMap.keySet()).stream().map(ProductFactory::toDTO).toList();
+
+    TopSellingProductsDTO topSellingProductsDTO = TopSellingProductsDTO.builder()
+            .limit(limit)
+            .topSellingProducts(productMap)
+            .bulkFetchProducts(bulk)
+            .build();
+
+    return topSellingProductsDTO;
 
     /*List<String> productIds = result.getMappedResults().stream().map(doc -> (doc.get("_id")).toString()).toList();
     List<Product> products = this.productRepository.findAllById(productIds);

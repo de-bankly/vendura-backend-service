@@ -2,6 +2,7 @@ package com.bankly.vendura.stats;
 
 import com.bankly.vendura.inventory.product.model.Product;
 import com.bankly.vendura.inventory.product.model.ProductDTO;
+import com.bankly.vendura.sale.model.TopSellingProductsDTO;
 import com.bankly.vendura.stats.model.SummaryDTO;
 import java.util.Date;
 import java.util.HashMap;
@@ -39,7 +40,7 @@ public class StatsControllerV1 {
   }
 
   @GetMapping("/topSellingProducts")
-  public ResponseEntity<Map<String, Integer>> getTopSellingProducts(
+  public ResponseEntity<TopSellingProductsDTO> getTopSellingProducts(
       @RequestParam(value = "period", required = false, defaultValue = "MONTH") String period,
       @RequestParam(value = "limit", required = false, defaultValue = "10") int limit) {
     return ResponseEntity.ok(
