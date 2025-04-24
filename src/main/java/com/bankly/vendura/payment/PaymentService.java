@@ -7,7 +7,6 @@ import com.bankly.vendura.sale.model.Sale;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,6 +98,7 @@ public class  PaymentService {
     double remainingAmount = (double) Math.round(sale.calculateTotal() * 100) / 100;
     System.out.println("remainingAmount: " + remainingAmount);
     for (Payment payment : sortedPayments) {
+      System.out.println("Remaining amount is " + remainingAmount);
       if (remainingAmount <= 0) {
         System.out.println("remainingAmount <= 0");
         sale.getPayments().remove(payment);
@@ -146,7 +146,8 @@ public class  PaymentService {
 
 
       if (transactionSuccess) {
-        remainingAmount -= payment.getAmount();
+        System.out.println("Payment succeeded: " + payment.getAmount());
+        remainingAmount = (double) Math.round((remainingAmount - payment.getAmount()) * 100) / 100;
         payment.setStatus(Payment.Status.COMPLETED);
         this.paymentRepository.save(payment);
       }
