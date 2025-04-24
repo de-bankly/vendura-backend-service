@@ -1,6 +1,8 @@
 package com.bankly.vendura.stats;
 
 import com.bankly.vendura.inventory.product.model.Product;
+import com.bankly.vendura.inventory.product.model.ProductDTO;
+import com.bankly.vendura.inventory.product.model.ProductFactory;
 import com.bankly.vendura.inventory.product.model.ProductRepository;
 import com.bankly.vendura.payment.model.*;
 import com.bankly.vendura.sale.model.Sale;
@@ -10,6 +12,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -130,7 +133,7 @@ public class StatsService {
                 e -> e.getKey().getId(), Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
   }
 
-  public Map<Product, Integer> getProductsTopSelling(SummaryDTO.Period period, int limit) {
+  public Map<String, Integer> getProductsTopSelling(SummaryDTO.Period period, int limit) {
     Date periodStartDate =
         new Date(System.currentTimeMillis() - (period.getDays()) * 24 * 60 * 60 * 1000L);
     Date periodEndDate = new Date();
@@ -163,14 +166,19 @@ public class StatsService {
     AggregationResults<Document> result =
         this.mongoTemplate.aggregate(aggregation, "sales", Document.class);
 
-    List<String> productIds = result.getMappedResults().stream().map(doc -> doc.getString("productId")).toList();
+    return result.getMappedResults().stream().collect(Collectors.toMap(k -> k.get("_id").toString(), k -> k.getInteger("totalQuantity")));
+
+    /*List<String> productIds = result.getMappedResults().stream().map(doc -> (doc.get("_id")).toString()).toList();
     List<Product> products = this.productRepository.findAllById(productIds);
 
-    Map<Product, Integer> productMap = new HashMap<>();
+    Map<ProductDTO, Integer> productMap = new HashMap<>();
+    System.out.println(products.size());
+    System.out.println(result.getMappedResults().size());
+    System.out.println(Arrays.toString(productIds.toArray()));
     for (int i = 0; i < productIds.size(); i++) {
-      productMap.put(products.get(i), result.getMappedResults().get(i).getInteger("totalQuantity"));
+      productMap.put(ProductFactory.toDTO(products.get(i)), result.getMappedResults().get(i).getInteger("totalQuantity"));
     }
 
-    return productMap;
+    return productMap;*/
   }
 }
