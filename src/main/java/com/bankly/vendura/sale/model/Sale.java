@@ -48,6 +48,14 @@ public class Sale implements ProductTransactable {
     return allPositions;
   }
 
+  public long getAmountOfItems() {
+    return this.positions.stream().mapToLong(Position::getTotalQuantity).sum();
+  }
+
+  public double getTotalDiscount() {
+    return this.positions.stream().mapToDouble(Position::getDiscountEuro).sum();
+  }
+
   public static SaleBuilder builder() {
     return new SaleBuilder();
   }
