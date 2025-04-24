@@ -48,14 +48,44 @@ public class DepositService {
   }
 
   private String generateId() {
-    StringBuilder id;
+    String baseId;
+    String fullEan13Id;
     do {
-      id = new StringBuilder();
-      for (int i = 0; i < 13; i++) {
-        id.append((int) (Math.random() * 10));
-      }
-    } while (this.depositReceiptRepository.existsById(id.toString()));
+      baseId = generateRandomDigits(12);
+      int checkDigit = calculateEan13CheckDigit(baseId);
+      fullEan13Id = baseId + checkDigit;
+    } while (this.depositReceiptRepository.existsById(fullEan13Id));
+    return fullEan13Id;
+  }
+
+  private String generateRandomDigits(int length) {
+    StringBuilder id = new StringBuilder();
+    for (int i = 0; i < length; i++) {
+      id.append((int) (Math.random() * 10));
+    }
     return id.toString();
+  }
+
+  private int calculateEan13CheckDigit(String data) {
+    if (data == null || data.length() != 12) {
+        throw new IllegalArgumentException("Input data must be 12 digits long.");
+    }
+
+    int sumOdd = 0;
+    int sumEven = 0;
+
+    for (int i = 0; i < 12; i++) {
+        int digit = Character.getNumericValue(data.charAt(i));
+        if ((i + 1) % 2 == 0) { // even position (2, 4, ..., 12)
+            sumEven += digit;
+        } else { // odd position (1, 3, ..., 11)
+            sumOdd += digit;
+        }
+    }
+
+    int totalSum = sumOdd + (sumEven * 3);
+    int remainder = totalSum % 10;
+    return (remainder == 0) ? 0 : (10 - remainder);
   }
 
   public void deleteDepositReceipt(String id) {
